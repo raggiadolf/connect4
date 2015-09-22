@@ -9,6 +9,7 @@ import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.OvalShape;
 import android.support.annotation.NonNull;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -30,18 +31,20 @@ public class BoardView extends View {
     public BoardView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
-        m_paint.setColor(Color.WHITE);
+        m_paint.setColor(Color.BLACK);
         m_paint.setStyle(Paint.Style.STROKE);
         m_paint.setStrokeWidth(2.0f);
     }
 
     public void setBoard(String string) {
-        for(int index = 0, r = 6; r >= 0; --r) {
-            for(int c = 0; c < 6; ++c, ++index) {
-                m_board[c][r] = string.charAt(index);
+        Log.i("board", string);
+        for(int row = 0, index = 0; row < 6; row++) {
+            for(int col = 0; col < 7; col++, index++) {
+                m_board[row][col] = string.charAt(index);
             }
         }
 
+        m_board = transpose(m_board);
         invalidate();
     }
 
@@ -60,20 +63,20 @@ public class BoardView extends View {
     }
 
     public void onDraw(Canvas canvas) {
-        for(int index = 0, r = 6; r >= 0; --r) {
-            for(int c = 0; c < 6; ++c, ++index) {
-                m_rect.set(c * m_cellWidth, r * m_cellHeight,
-                        c * m_cellWidth + m_cellWidth, r * m_cellHeight + m_cellHeight);
+        for(int row = 0; row < 7; row++) {
+            for(int col = 0; col < 6; col++) {
+                m_rect.set(row * m_cellWidth, col * m_cellHeight,
+                        row * m_cellWidth + m_cellWidth, col * m_cellHeight + m_cellHeight);
                 canvas.drawRect(m_rect, m_paint);
                 m_rect.inset((int)(m_rect.width() * 0.1), (int)(m_rect.height() * 0.1));
                 m_shape.setBounds(m_rect);
 
-                switch(m_board[c][r]) {
+                switch(m_board[row][col]) {
                     case 'r':
                         m_shape.getPaint().setColor(Color.RED);
                         m_shape.draw(canvas);
                         break;
-                    case 'o':
+                    case 'w':
                         m_shape.getPaint().setColor(Color.BLACK);
                         m_shape.draw(canvas);
                         break;
@@ -99,5 +102,28 @@ public class BoardView extends View {
 
     public void setMoveEventHandler(OnMoveEventHandler handler) {
         m_moveHandler = handler;
+    }
+
+    /**
+     * Helper function to transpose the matrix, since it does not display
+     * the same way our state sees it internally
+     * @param array the array to transpose
+     * @return 'array' transposed
+     */
+    private char[][] transpose (char[][] array) {
+        if (array == null || array.length == 0)//empty or unset array, nothing do to here
+            return array;
+
+        int width = array.length;
+        int height = array[0].length;
+
+        char[][] array_new = new char[height][width];
+
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                array_new[y][x] = array[x][y];
+            }
+        }
+        return array_new;
     }
 }

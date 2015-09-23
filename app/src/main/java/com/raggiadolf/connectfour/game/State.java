@@ -687,7 +687,7 @@ public class State {
         for(char[] row : grid) {
             for(char token : row) {
                 char ch = '0';
-                switch(token) {
+                switch(Character.toLowerCase(token)) {
                     case 'w':
                         ch = 'w';
                         break;

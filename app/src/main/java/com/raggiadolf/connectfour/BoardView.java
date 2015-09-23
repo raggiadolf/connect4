@@ -22,6 +22,7 @@ public class BoardView extends View {
     private int m_cellHeight = 0;
 
     private char[][] m_board = new char[6][7];
+    private char[][] m_drawingBoard;
     private Paint m_paint = new Paint();
     private OnMoveEventHandler m_moveHandler = null;
 
@@ -44,7 +45,6 @@ public class BoardView extends View {
             }
         }
 
-        m_board = transpose(m_board);
         invalidate();
     }
 
@@ -63,6 +63,8 @@ public class BoardView extends View {
     }
 
     public void onDraw(Canvas canvas) {
+        m_drawingBoard = transpose(m_board);
+
         for(int row = 0; row < 7; row++) {
             for(int col = 0; col < 6; col++) {
                 m_rect.set(row * m_cellWidth, col * m_cellHeight,
@@ -71,7 +73,7 @@ public class BoardView extends View {
                 m_rect.inset((int)(m_rect.width() * 0.1), (int)(m_rect.height() * 0.1));
                 m_shape.setBounds(m_rect);
 
-                switch(m_board[row][col]) {
+                switch(m_drawingBoard[row][col]) {
                     case 'r':
                         m_shape.getPaint().setColor(Color.RED);
                         m_shape.draw(canvas);
@@ -89,6 +91,14 @@ public class BoardView extends View {
 
     @Override
     public boolean onTouchEvent(@NonNull MotionEvent event) {
+        int x = (int) event.getX();
+        int y = (int) event.getY();
+
+        if(event.getAction() == MotionEvent.ACTION_DOWN) {
+            if(m_moveHandler != null) {
+                m_moveHandler.onMove(xToCol(x));
+            }
+        }
         return true;
     }
 

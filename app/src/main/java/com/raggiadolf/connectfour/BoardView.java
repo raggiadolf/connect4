@@ -63,7 +63,7 @@ public class BoardView extends View {
     }
 
     public void onDraw(Canvas canvas) {
-        m_drawingBoard = transpose(m_board);
+        m_drawingBoard = rotateByPositiveNinety(m_board);
 
         for(int row = 0; row < 7; row++) {
             for(int col = 0; col < 6; col++) {
@@ -115,13 +115,14 @@ public class BoardView extends View {
     }
 
     /**
-     * Helper function to transpose the matrix, since it does not display
-     * the same way our state sees it internally
+     * Helper function to rotate the matrix by 90 degrees,
+     * since it does not display the same way our state
+     * sees it internally.
      * @param array the array to transpose
      * @return 'array' transposed
      */
-    private char[][] transpose (char[][] array) {
-        if (array == null || array.length == 0)//empty or unset array, nothing do to here
+    private char[][] rotateByPositiveNinety (char[][] array) {
+        if (array == null || array.length == 0) //empty or unset array, should not be needed in our case.
             return array;
 
         int width = array.length;
@@ -129,11 +130,22 @@ public class BoardView extends View {
 
         char[][] array_new = new char[height][width];
 
+        // Transpose the array
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 array_new[y][x] = array[x][y];
             }
         }
+
+        // Reverse rows
+        for(int j = 0; j < array_new.length; j++){
+            for(int i = 0; i < array_new[j].length / 2; i++) {
+                char temp = array_new[j][i];
+                array_new[j][i] = array_new[j][array_new[j].length - i - 1];
+                array_new[j][array_new[j].length - i - 1] = temp;
+            }
+        }
+
         return array_new;
     }
 }

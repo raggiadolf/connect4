@@ -1,17 +1,21 @@
 package com.raggiadolf.connectfour;
 
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import com.raggiadolf.connectfour.game.State;
+import com.raggiadolf.connectfour.game.*;
 
 public class SinglePlayerActivity extends AppCompatActivity {
 
     BoardView m_boardView;
     State m_gameState;
+
+    private static int playclock = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,6 +29,7 @@ public class SinglePlayerActivity extends AppCompatActivity {
             public void onMove(int action) {
                 m_gameState.DoMove(action);
                 updateDisplay();
+                new AlphaBetaSearchTask().execute(m_gameState);
             }
         });
 
@@ -58,6 +63,40 @@ public class SinglePlayerActivity extends AppCompatActivity {
         m_boardView.setBoard(m_gameState.toString());
         if(m_gameState.GoalTest()) {
             Toast.makeText(getApplicationContext(), "Game over", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private class AlphaBetaSearchTask extends AsyncTask<State, Integer, Integer> {
+        @Override
+        protected Integer doInBackground(State... params) {
+            State searchState = new State(params[0]);
+            AlphaBetaSearch abs = new AlphaBetaSearch(playclock);
+            Node nextMove = new Node();
+            try {
+                for(int i = 2; i < 42; i++) {
+                    nextMove = abs.AlphaBeta(i, searchState, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1);
+                    publishProgress(i);
+                }
+                return nextMove.getMove();
+            } catch(OutOfTimeException ex) {
+                return nextMove.getMove();
+            }
+        }
+
+        /**
+         * Here we want to update some progressbar in the view to display that the game is in a 'thinking' state.
+         * @param values
+         */
+        @Override
+        protected void onProgressUpdate(Integer... values) {
+            super.onProgressUpdate(values);
+            Log.i("progressupdate", "" + values[0]);
+        }
+
+        @Override
+        protected void onPostExecute(Integer action) {
+            m_gameState.DoMove(action);
+            updateDisplay();
         }
     }
 }

@@ -9,7 +9,6 @@ import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.OvalShape;
 import android.support.annotation.NonNull;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -38,7 +37,6 @@ public class BoardView extends View {
     }
 
     public void setBoard(String string) {
-        Log.i("board", string);
         for(int row = 0, index = 0; row < 6; row++) {
             for(int col = 0; col < 7; col++, index++) {
                 m_board[row][col] = string.charAt(index);

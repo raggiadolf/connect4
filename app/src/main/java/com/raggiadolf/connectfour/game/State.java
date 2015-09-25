@@ -9,6 +9,13 @@ public class State {
     private int lastCol;
     private int lastRow;
 
+    private static int[][] evaluationTable = {{3, 4,  5,  7,  5, 4, 3},
+                                             {4, 6,  8, 10,  8, 6, 4},
+                                             {5, 8, 11, 13, 11, 8, 5},
+                                             {5, 8, 11, 13, 11, 8, 5},
+                                             {4, 6,  8, 10,  8, 6, 4},
+                                             {3, 4,  5,  7,  5, 4, 3}};
+
     public State() {
         this.grid = new char[][]{
                     {0, 0, 0, 0, 0, 0, 0},
@@ -42,8 +49,8 @@ public class State {
      * grid is 0 indexed.
      * @return The move that led to the current state.
      */
-    public String getLastMove() {
-        return "(DROP " + (this.lastCol + 1) + ")";
+    public Integer getLastMove() {
+        return this.lastCol + 1;
     }
 
     /**
@@ -309,9 +316,9 @@ public class State {
         for(int i = 0; i < 6; i++) {
             for(int j = 0; j < 7; j++) {
                 if(this.grid[i][j] == token) {
-                    sum += NewAgent.evaluationTable[i][j];
+                    sum += evaluationTable[i][j];
                 } else if(this.grid[i][j] != 0) {
-                    sum -= NewAgent.evaluationTable[i][j];
+                    sum -= evaluationTable[i][j];
                 }
             }
         }
@@ -668,9 +675,9 @@ public class State {
         for(int i = 0; i < 6; i++) {
             for(int j = 0; j < 7; j++) {
                 if(this.grid[i][j] == token) {
-                    sum += NewAgent.evaluationTable[i][j];
+                    sum += evaluationTable[i][j];
                 } else if(this.grid[i][j] != 0) {
-                    sum -= NewAgent.evaluationTable[i][j];
+                    sum -= evaluationTable[i][j];
                 }
             }
         }

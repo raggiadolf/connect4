@@ -10,20 +10,19 @@ public class State {
     private int lastRow;
 
     private static int[][] evaluationTable = {{3, 4,  5,  7,  5, 4, 3},
-                                             {4, 6,  8, 10,  8, 6, 4},
-                                             {5, 8, 11, 13, 11, 8, 5},
-                                             {5, 8, 11, 13, 11, 8, 5},
-                                             {4, 6,  8, 10,  8, 6, 4},
-                                             {3, 4,  5,  7,  5, 4, 3}};
+                                              {4, 6,  8, 10,  8, 6, 4},
+                                              {5, 8, 11, 13, 11, 8, 5},
+                                              {5, 8, 11, 13, 11, 8, 5},
+                                              {4, 6,  8, 10,  8, 6, 4},
+                                              {3, 4,  5,  7,  5, 4, 3}};
 
     public State() {
-        this.grid = new char[][]{
-                    {0, 0, 0, 0, 0, 0, 0},
-                    {0, 0, 0, 0, 0, 0, 0},
-                    {0, 0, 0, 0, 0, 0, 0},
-                    {0, 0, 0, 0, 0, 0, 0},
-                    {0, 0, 0, 0, 0, 0, 0},
-                    {0, 0, 0, 0, 0, 0, 0}};
+        this.grid = new char[][]{{0, 0, 0, 0, 0, 0, 0},
+                                 {0, 0, 0, 0, 0, 0, 0},
+                                 {0, 0, 0, 0, 0, 0, 0},
+                                 {0, 0, 0, 0, 0, 0, 0},
+                                 {0, 0, 0, 0, 0, 0, 0},
+                                 {0, 0, 0, 0, 0, 0, 0}};
         this.player = "RED";
         this.lastCol = 1;
         this.lastRow = 1;
@@ -50,7 +49,7 @@ public class State {
      * @return The move that led to the current state.
      */
     public Integer getLastMove() {
-        return this.lastCol + 1;
+        return this.lastCol;
     }
 
     /**

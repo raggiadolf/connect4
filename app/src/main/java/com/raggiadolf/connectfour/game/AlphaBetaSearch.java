@@ -28,7 +28,6 @@ public class AlphaBetaSearch{
         long timeUsed = System.currentTimeMillis() - this.start;
 
         if(timeUsed > (this.playclock - 100)) {
-            System.out.println("Throwing exception!");
             throw new OutOfTimeException("Out of time!");
         }
 
@@ -48,7 +47,7 @@ public class AlphaBetaSearch{
             state.UndoMove(action);
 
             if(reply.getScore() > bestMove.getScore()) {
-                bestMove.setMove(action + 1);
+                bestMove.setMove(action);
                 bestMove.setScore(reply.getScore());
             }
 
@@ -73,7 +72,6 @@ public class AlphaBetaSearch{
         long timeUsed = System.currentTimeMillis() - this.start;
 
         if(timeUsed > (this.playclock - 500)) {
-            System.out.println("Throwing exception!");
             throw new OutOfTimeException("Out of time!");
         }
 
@@ -93,7 +91,7 @@ public class AlphaBetaSearch{
             state.UndoMove(action);
 
             if(reply.getScore() > bestMove.getScore()) {
-                bestMove.setMove(action + 1);
+                bestMove.setMove(action);
                 bestMove.setScore(reply.getScore());
             }
 

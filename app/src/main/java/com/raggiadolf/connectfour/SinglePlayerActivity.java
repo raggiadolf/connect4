@@ -77,10 +77,8 @@ public class SinglePlayerActivity extends AppCompatActivity {
                     nextMove = abs.AlphaBeta(i, searchState, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1);
                     publishProgress(i);
                 }
-                Log.i("Returning", "" + nextMove.getMove());
                 return nextMove.getMove();
             } catch(OutOfTimeException ex) {
-                Log.i("Returning", "" + nextMove.getMove());
                 return nextMove.getMove();
             }
         }
@@ -92,7 +90,6 @@ public class SinglePlayerActivity extends AppCompatActivity {
         @Override
         protected void onProgressUpdate(Integer... values) {
             super.onProgressUpdate(values);
-            //Log.i("progressupdate", "" + values[0]);
         }
 
         @Override

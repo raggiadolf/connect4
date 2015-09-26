@@ -5,12 +5,16 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.OvalShape;
 import android.support.annotation.NonNull;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by ragnaradolf on 22/09/15.
@@ -23,17 +27,30 @@ public class BoardView extends View {
     private char[][] m_board = new char[6][7];
     private char[][] m_drawingBoard;
     private Paint m_paint = new Paint();
+    private Paint m_discPaint = new Paint();
     private OnMoveEventHandler m_moveHandler = null;
 
-    ShapeDrawable m_shape = new ShapeDrawable(new OvalShape());
-    Rect m_rect = new Rect();
+    private List<ArrayList<RectF>> m_boardDiscs = new ArrayList<>();
 
     public BoardView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
-        m_paint.setColor(Color.BLACK);
-        m_paint.setStyle(Paint.Style.STROKE);
+        m_paint.setColor(Color.BLUE);
+        m_paint.setStyle(Paint.Style.FILL);
         m_paint.setStrokeWidth(2.0f);
+
+        m_discPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+
+        for(int row = 0; row < 7; row++) {
+            m_boardDiscs.add(new ArrayList<RectF>());
+            for(int col = 0; col < 6; col++) {
+                RectF newRect = new RectF();
+                newRect.set(row * m_cellWidth, col * m_cellHeight,
+                        row * m_cellWidth + m_cellWidth, col * m_cellHeight + m_cellHeight);
+                newRect.inset((int) (newRect.width() * 0.1), (int) (newRect.height() * 0.1));
+                m_boardDiscs.get(row).add(col, newRect);
+            }
+        }
     }
 
     public void setBoard(String string) {
@@ -56,8 +73,18 @@ public class BoardView extends View {
 
     @Override
     protected void onSizeChanged(int xNew, int yNew, int xOld, int yOld) {
-        m_cellWidth = xNew  / 7;
+        m_cellWidth  = xNew / 7;
         m_cellHeight = yNew / 6;
+
+        for(int row = 0; row < 7; row++) {
+            for(int col = 0; col < 6; col++) {
+                int x = row * m_cellWidth;
+                int y = col * m_cellHeight;
+                m_boardDiscs.get(row).get(col).set(x, y, x + m_cellWidth, y + m_cellHeight);
+                m_boardDiscs.get(row).get(col).offset(getPaddingLeft(), getPaddingTop());
+                m_boardDiscs.get(row).get(col).inset(m_cellWidth * 0.1f, m_cellHeight * 0.1f);
+            }
+        }
     }
 
     public void onDraw(Canvas canvas) {
@@ -65,22 +92,18 @@ public class BoardView extends View {
 
         for(int row = 0; row < 7; row++) {
             for(int col = 0; col < 6; col++) {
-                m_rect.set(row * m_cellWidth, col * m_cellHeight,
-                        row * m_cellWidth + m_cellWidth, col * m_cellHeight + m_cellHeight);
-                canvas.drawRect(m_rect, m_paint);
-                m_rect.inset((int)(m_rect.width() * 0.1), (int)(m_rect.height() * 0.1));
-                m_shape.setBounds(m_rect);
-
                 switch(m_drawingBoard[row][col]) {
                     case 'r':
-                        m_shape.getPaint().setColor(Color.RED);
-                        m_shape.draw(canvas);
+                        m_discPaint.setColor(Color.RED);
+                        canvas.drawOval(m_boardDiscs.get(row).get(col), m_discPaint);
                         break;
                     case 'w':
-                        m_shape.getPaint().setColor(Color.BLACK);
-                        m_shape.draw(canvas);
+                        m_discPaint.setColor(Color.BLACK);
+                        canvas.drawOval(m_boardDiscs.get(row).get(col), m_discPaint);
                         break;
                     default:
+                        m_discPaint.setColor(Color.WHITE);
+                        canvas.drawOval(m_boardDiscs.get(row).get(col), m_discPaint);
                         break;
                 }
             }
@@ -93,6 +116,8 @@ public class BoardView extends View {
         int y = (int) event.getY();
 
         if(event.getAction() == MotionEvent.ACTION_DOWN) {
+
+        } else if(event.getAction() == MotionEvent.ACTION_UP) {
             if(m_moveHandler != null) {
                 m_moveHandler.onMove(xToCol(x));
             }
@@ -102,10 +127,6 @@ public class BoardView extends View {
 
     private int xToCol(int x) {
         return x / m_cellWidth;
-    }
-
-    private int yToRow(int y) {
-        return y / m_cellHeight;
     }
 
     public void setMoveEventHandler(OnMoveEventHandler handler) {

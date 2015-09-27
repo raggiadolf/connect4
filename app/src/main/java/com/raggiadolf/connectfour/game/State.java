@@ -48,8 +48,16 @@ public class State {
      * grid is 0 indexed.
      * @return The move that led to the current state.
      */
-    public Integer getLastMove() {
+    public int getLastMove() {
         return this.lastCol;
+    }
+
+    public int getLastRow() {
+        return this.lastRow;
+    }
+
+    public char getLastPlayerToken() {
+        return Character.toLowerCase(this.player.charAt(0));
     }
 
     /**

@@ -1,5 +1,8 @@
 package com.raggiadolf.connectfour;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -7,6 +10,7 @@ import android.graphics.Paint;
 import android.graphics.RectF;
 import android.support.annotation.NonNull;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -25,18 +29,16 @@ public class BoardView extends View {
 
     private char[][] m_board = new char[6][7];
     private char[][] m_drawingBoard;
-    private Paint m_paint = new Paint();
+
     private Paint m_discPaint = new Paint();
     private OnMoveEventHandler m_moveHandler = null;
 
     private List<ArrayList<RectF>> m_boardDiscs = new ArrayList<>();
+    private RectF m_fallingDisc = null;
+    private Paint m_fallingDiscPaint = new Paint();
 
     public BoardView(Context context, AttributeSet attrs) {
         super(context, attrs);
-
-        m_paint.setColor(Color.BLUE);
-        m_paint.setStyle(Paint.Style.FILL);
-        m_paint.setStrokeWidth(2.0f);
 
         m_discPaint.setStyle(Paint.Style.FILL_AND_STROKE);
 
@@ -52,7 +54,7 @@ public class BoardView extends View {
         }
     }
 
-    public void setBoard(String string) {
+    public void setupBoard(String string) {
         for(int row = 0, index = 0; row < 6; row++) {
             for(int col = 0; col < 7; col++, index++) {
                 m_board[row][col] = string.charAt(index);
@@ -60,6 +62,51 @@ public class BoardView extends View {
         }
 
         invalidate();
+    }
+
+    ValueAnimator animator = new ValueAnimator();
+    private void dropDisc(final int col, final int row, final char token, final double endcoord) {
+        animator.removeAllUpdateListeners();
+        animator.setDuration(500);
+        animator.setFloatValues(0.0f, 1.0f);
+        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                float ratio = (float) animation.getAnimatedValue();
+                double diffVertical  = endcoord * ratio;
+                m_fallingDisc.top    = (float) diffVertical;
+                m_fallingDisc.bottom = (float) diffVertical + m_fallingDisc.height();
+                invalidate();
+            }
+        });
+        animator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                m_board[col][row] = token;
+                m_fallingDisc = null;
+                invalidate();
+            }
+        });
+        animator.start();
+    }
+
+    public void placeDisc(int row, int col, char token) {
+        m_fallingDisc = new RectF();
+        m_fallingDisc.set(row * m_cellWidth, 0,
+                row * m_cellWidth + m_cellWidth, m_cellHeight);
+        m_fallingDisc.inset((int) (m_fallingDisc.width() * 0.1), (int) (m_fallingDisc.height() * 0.1));
+
+        switch(token) {
+            case 'w':
+                m_fallingDiscPaint.setColor(Color.BLACK);
+                break;
+            case 'r':
+                m_fallingDiscPaint.setColor(Color.RED);
+                break;
+        }
+
+        double endcoord = (getMeasuredHeight() + m_fallingDisc.height() * 0.1) - col * m_cellHeight;
+        dropDisc(col, row, token, endcoord);
     }
 
     @Override
@@ -89,6 +136,7 @@ public class BoardView extends View {
     public void onDraw(Canvas canvas) {
         m_drawingBoard = rotateByPositiveNinety(m_board);
 
+
         for(int row = 0; row < 7; row++) {
             for(int col = 0; col < 6; col++) {
                 switch(m_drawingBoard[row][col]) {
@@ -107,12 +155,16 @@ public class BoardView extends View {
                 }
             }
         }
+
+        if(m_fallingDisc != null) {
+            m_discPaint.setColor(Color.BLACK);
+            canvas.drawOval(m_fallingDisc, m_fallingDiscPaint);
+        }
     }
 
     @Override
     public boolean onTouchEvent(@NonNull MotionEvent event) {
         int x = (int) event.getX();
-        int y = (int) event.getY();
 
         if(event.getAction() == MotionEvent.ACTION_DOWN) {
 

@@ -35,7 +35,7 @@ public class SinglePlayerActivity extends AppCompatActivity {
         });
 
         m_gameState = new State();
-        m_boardView.setBoard(m_gameState.toString());
+        m_boardView.setupBoard(m_gameState.toString());
     }
 
     @Override
@@ -61,7 +61,8 @@ public class SinglePlayerActivity extends AppCompatActivity {
     }
 
     public void updateDisplay() {
-        m_boardView.setBoard(m_gameState.toString());
+        //m_boardView.setBoard(m_gameState.toString());
+        m_boardView.placeDisc(m_gameState.getLastMove(), m_gameState.getLastRow(), m_gameState.getLastPlayerToken());
         if(m_gameState.GoalTest()) {
             Toast.makeText(getApplicationContext(), "Game over", Toast.LENGTH_SHORT).show();
         }

@@ -29,6 +29,7 @@ public class SinglePlayerActivity extends AppCompatActivity {
             public void onMove(int action) {
                 m_gameState.DoMove(action);
                 updateDisplay();
+                m_boardView.setCanMove(false);
                 new AlphaBetaSearchTask().execute(m_gameState);
             }
         });
@@ -96,6 +97,7 @@ public class SinglePlayerActivity extends AppCompatActivity {
         protected void onPostExecute(Integer action) {
             m_gameState.DoMove(action);
             updateDisplay();
+            m_boardView.setCanMove(true);
         }
     }
 }

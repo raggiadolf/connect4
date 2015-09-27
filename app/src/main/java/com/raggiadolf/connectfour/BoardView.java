@@ -4,10 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Rect;
 import android.graphics.RectF;
-import android.graphics.drawable.ShapeDrawable;
-import android.graphics.drawable.shapes.OvalShape;
 import android.support.annotation.NonNull;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -23,6 +20,8 @@ public class BoardView extends View {
 
     private int m_cellWidth  = 0;
     private int m_cellHeight = 0;
+
+    private boolean m_canMove = true;
 
     private char[][] m_board = new char[6][7];
     private char[][] m_drawingBoard;
@@ -119,7 +118,9 @@ public class BoardView extends View {
 
         } else if(event.getAction() == MotionEvent.ACTION_UP) {
             if(m_moveHandler != null) {
-                m_moveHandler.onMove(xToCol(x));
+                if(m_canMove) {
+                    m_moveHandler.onMove(xToCol(x));
+                }
             }
         }
         return true;
@@ -166,5 +167,9 @@ public class BoardView extends View {
         }
 
         return array_new;
+    }
+
+    public void setCanMove(boolean canMove) {
+        this.m_canMove = canMove;
     }
 }

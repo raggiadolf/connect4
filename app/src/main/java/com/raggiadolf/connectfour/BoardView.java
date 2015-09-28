@@ -37,6 +37,8 @@ public class BoardView extends View {
     private RectF m_fallingDisc = null;
     private Paint m_fallingDiscPaint = new Paint();
 
+    private float m_discHeight;
+
     public BoardView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
@@ -73,9 +75,9 @@ public class BoardView extends View {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
                 float ratio = (float) animation.getAnimatedValue();
-                double diffVertical  = endcoord * ratio;
-                m_fallingDisc.top    = (float) diffVertical;
-                m_fallingDisc.bottom = (float) diffVertical + m_fallingDisc.height();
+                double diffVertical = endcoord * ratio;
+                m_fallingDisc.top = (float) diffVertical - m_discHeight;
+                m_fallingDisc.bottom = (float) diffVertical;
                 invalidate();
             }
         });
@@ -105,7 +107,7 @@ public class BoardView extends View {
                 break;
         }
 
-        double endcoord = (getMeasuredHeight() + m_fallingDisc.height() * 0.1) - col * m_cellHeight;
+        double endcoord = (getMeasuredHeight() - m_discHeight * 0.1) - col * m_cellHeight;
         dropDisc(col, row, token, endcoord);
     }
 
@@ -131,6 +133,8 @@ public class BoardView extends View {
                 m_boardDiscs.get(row).get(col).inset(m_cellWidth * 0.1f, m_cellHeight * 0.1f);
             }
         }
+
+        m_discHeight = m_boardDiscs.get(0).get(0).height();
     }
 
     public void onDraw(Canvas canvas) {

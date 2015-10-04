@@ -13,4 +13,13 @@
         android:text="@string/playSinglePlayerGame"
         />
 
+    <Button
+        android:id="@+id/playMultiPlayerGame"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="startMultiPlayer"
+        android:text="@string/playMultiPlayerGame"
+        android:layout_below="@+id/playSinglePlayerGame"
+        android:layout_alignParentStart="true" />
+
 </RelativeLayout>

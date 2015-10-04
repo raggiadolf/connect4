@@ -7,6 +7,8 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
 import android.support.annotation.NonNull;
 import android.util.AttributeSet;
@@ -39,14 +41,20 @@ public class BoardView extends View {
 
     private float m_discHeight;
 
+    private int m_player1Color = getResources().getColor(R.color.player1);
+    private int m_player2Color = getResources().getColor(R.color.player2);
+    private int m_emptyDisc = Color.WHITE;
+    private Paint m_holePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+
     public BoardView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
         m_discPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+        m_holePaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
 
         for(int row = 0; row < 7; row++) {
             m_boardDiscs.add(new ArrayList<RectF>());
-            for(int col = 0; col < 6; col++) {
+            for (int col = 0; col < 6; col++) {
                 RectF newRect = new RectF();
                 newRect.set(row * m_cellWidth, col * m_cellHeight,
                         row * m_cellWidth + m_cellWidth, col * m_cellHeight + m_cellHeight);
@@ -99,11 +107,11 @@ public class BoardView extends View {
         m_fallingDisc.inset((int) (m_fallingDisc.width() * 0.1), (int) (m_fallingDisc.height() * 0.1));
 
         switch(token) {
-            case 'w':
-                m_fallingDiscPaint.setColor(Color.BLACK);
-                break;
             case 'r':
-                m_fallingDiscPaint.setColor(Color.RED);
+                m_fallingDiscPaint.setColor(m_player1Color);
+                break;
+            case 'w':
+                m_fallingDiscPaint.setColor(m_player2Color);
                 break;
         }
 
@@ -145,15 +153,15 @@ public class BoardView extends View {
             for(int col = 0; col < 6; col++) {
                 switch(m_drawingBoard[row][col]) {
                     case 'r':
-                        m_discPaint.setColor(Color.RED);
+                        m_discPaint.setColor(m_player1Color);
                         canvas.drawOval(m_boardDiscs.get(row).get(col), m_discPaint);
                         break;
                     case 'w':
-                        m_discPaint.setColor(Color.BLACK);
+                        m_discPaint.setColor(m_player2Color);
                         canvas.drawOval(m_boardDiscs.get(row).get(col), m_discPaint);
                         break;
                     default:
-                        m_discPaint.setColor(Color.WHITE);
+                        m_discPaint.setColor(m_emptyDisc);
                         canvas.drawOval(m_boardDiscs.get(row).get(col), m_discPaint);
                         break;
                 }

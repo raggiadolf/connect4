@@ -6,4 +6,11 @@
     <string name="title_activity_single_player">SinglePlayerActivity</string>
     <string name="playSinglePlayerGame">Play SinglePlayer Game</string>
     <string name="playMultiPlayerGame">Play MultiPlayer Game</string>
+    <string name="title_activity_multi_player">MultiPlayerActivity</string>
+    <string name="signing_in">Signing in with Google</string>
+    <string name="signing_out">Signing out</string>
+    <string name="sign_in_explanation">Sign with Google to upload your achievements and share with friends.</string>
+    <string name="you_are_signed_in">You are signed in with Google.</string>
+    <string name="sign_out">Sign out</string>
+    <string name="signin_other_error">There was an issue with sign in. Please try again later.</string>
 </resources>

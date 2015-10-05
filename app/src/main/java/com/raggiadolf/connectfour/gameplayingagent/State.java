@@ -1,4 +1,4 @@
-package com.raggiadolf.connectfour.game;
+package com.raggiadolf.connectfour.gameplayingagent;
 
 import java.util.*;
 

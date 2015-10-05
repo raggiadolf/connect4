@@ -1,4 +1,4 @@
-package com.raggiadolf.connectfour.game;
+package com.raggiadolf.connectfour.gameplayingagent;
 
 /**
  * Nodes of the search tree that the search generates.

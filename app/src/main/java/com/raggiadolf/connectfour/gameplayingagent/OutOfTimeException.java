@@ -1,4 +1,4 @@
-package com.raggiadolf.connectfour.game;
+package com.raggiadolf.connectfour.gameplayingagent;
 
 /**
  * Just used to throw the agent out of the search if the time is up.

@@ -5,13 +5,21 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".MainMenuActivity">
 
+    <org.honorato.multistatetogglebutton.MultiStateToggleButton
+        android:id="@+id/difficulty_selector"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dip"
+        android:entries="@array/difficulty_array" />
+
     <Button
         android:id="@+id/playSinglePlayerGame"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:onClick="startSinglePlayer"
         android:text="@string/playSinglePlayerGame"
-        />
+        android:layout_above="@+id/playMultiPlayerGame"
+        android:layout_alignStart="@+id/playMultiPlayerGame" />
 
     <Button
         android:id="@+id/playMultiPlayerGame"
@@ -19,7 +27,7 @@
         android:layout_height="wrap_content"
         android:onClick="startMultiPlayer"
         android:text="@string/playMultiPlayerGame"
-        android:layout_below="@+id/playSinglePlayerGame"
-        android:layout_alignParentStart="true" />
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true" />
 
 </RelativeLayout>

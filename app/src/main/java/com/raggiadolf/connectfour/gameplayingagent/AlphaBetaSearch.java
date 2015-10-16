@@ -2,6 +2,7 @@ package com.raggiadolf.connectfour.gameplayingagent;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 public class AlphaBetaSearch{
 
@@ -21,7 +22,7 @@ public class AlphaBetaSearch{
         this.start = (System.currentTimeMillis());
     }
 
-    public Node AlphaBeta(int depth, State state, int alpha, int beta) throws OutOfTimeException {
+    public Node AlphaBetaHard(int depth, State state, int alpha, int beta) throws OutOfTimeException {
         Node bestMove = new Node();
         Node reply;
 
@@ -32,7 +33,7 @@ public class AlphaBetaSearch{
         }
 
         if(state.TerminalTest() || depth <= 0) {
-            bestMove.setScore(state.eval());
+            bestMove.setScore(state.hardEval());
             bestMove.setMove(state.getLastMove());
             return bestMove;
         }
@@ -42,7 +43,7 @@ public class AlphaBetaSearch{
 
         for(Integer action : actions) {
             state.DoMove(action);
-            reply = AlphaBeta(depth - 1, state, -beta, -alpha);
+            reply = AlphaBetaHard(depth - 1, state, -beta, -alpha);
             reply.setScore(-reply.getScore());
             state.UndoMove(action);
 
@@ -65,7 +66,7 @@ public class AlphaBetaSearch{
      * A second search function which utilises a different evaluation function
      * For testing purposes.
      */
-    public Node AlphaBetaTest(int depth, State state, int alpha, int beta) throws OutOfTimeException {
+    public Node AlphaBetaMedium(int depth, State state, int alpha, int beta) throws OutOfTimeException {
         Node bestMove = new Node();
         Node reply;
 
@@ -76,7 +77,7 @@ public class AlphaBetaSearch{
         }
 
         if(state.TerminalTest() || depth <= 0) {
-            bestMove.setScore(state.testEval());
+            bestMove.setScore(state.mediumEval());
             bestMove.setMove(state.getLastMove());
             return bestMove;
         }
@@ -86,7 +87,7 @@ public class AlphaBetaSearch{
 
         for(Integer action : actions) {
             state.DoMove(action);
-            reply = AlphaBetaTest(depth - 1, state, -beta, -alpha);
+            reply = AlphaBetaMedium(depth - 1, state, -beta, -alpha);
             reply.setScore(-reply.getScore());
             state.UndoMove(action);
 
@@ -103,5 +104,20 @@ public class AlphaBetaSearch{
         }
 
         return bestMove;
+    }
+
+    public Node AlphaBetaEasy(int depth, State state, int alpha, int beta) throws OutOfTimeException {
+        Node randomMove = new Node();
+        List<Integer> actions = state.LegalMoves();
+
+        randomMove.setMove(actions.get(randInt(0, actions.size() - 1)));
+
+        return randomMove;
+    }
+
+    public static int randInt(int min, int max) {
+        Random rand = new Random(System.currentTimeMillis());
+
+        return rand.nextInt((max - min) + 1) + min;
     }
 }

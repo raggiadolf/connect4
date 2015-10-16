@@ -7,12 +7,18 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import org.honorato.multistatetogglebutton.MultiStateToggleButton;
+
 public class MainMenuActivity extends AppCompatActivity {
+    MultiStateToggleButton m_difficultySelector;
+    Difficulty m_difficulty;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
+
+        m_difficultySelector = (MultiStateToggleButton) this.findViewById(R.id.difficulty_selector);
     }
 
     @Override
@@ -39,6 +45,22 @@ public class MainMenuActivity extends AppCompatActivity {
 
     public void startSinglePlayer(View view) {
         Intent intent = new Intent(this, SinglePlayerActivity.class);
+
+        switch(m_difficultySelector.getValue()) {
+            case 0:
+                intent.putExtra("difficulty", "easy");
+                break;
+            case 1:
+                intent.putExtra("difficulty", "medium");
+                break;
+            case 2:
+                intent.putExtra("difficulty", "hard");
+                break;
+            default:
+                intent.putExtra("difficulty", "easy");
+                break;
+        }
+
         startActivity(intent);
     }
 

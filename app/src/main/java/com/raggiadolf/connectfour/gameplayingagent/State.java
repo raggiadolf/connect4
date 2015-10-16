@@ -304,7 +304,7 @@ public class State {
      * @return A score for the board, from the perspective of the player who's
      * turn it is to drop the next token.
      */
-    public int eval() {
+    public int hardEval() {
         int utility = 138;
         int sum = 0;
 
@@ -663,8 +663,7 @@ public class State {
         return utility + sum;
     }
 
-    public int testEval() {
-        int utility = 138;
+    public int mediumEval() {
         int sum = 0;
 
         if(this.GoalTest()) {
@@ -679,16 +678,179 @@ public class State {
             token = 'W';
         }
 
-        for(int i = 0; i < 6; i++) {
-            for(int j = 0; j < 7; j++) {
-                if(this.grid[i][j] == token) {
-                    sum += evaluationTable[i][j];
-                } else if(this.grid[i][j] != 0) {
-                    sum -= evaluationTable[i][j];
+        int redCount = 0, whiteCount = 0;
+
+        for(int k = 0; k < 7; k++){
+            for(int l = 0; l < 6; l++){
+
+                /**
+                 * Vertical check
+                 */
+
+                if(l >= 3) {
+                    for(int i = l; i > l - 4; i--) {
+                        if(this.grid[i][k] == 'R') {
+                            redCount++;
+                        } else if(this.grid[i][k] == 'W'){
+                            whiteCount++;
+                        }
+                    }
+                    if(whiteCount == 4 && redCount == 0) {
+                        if(token == 'R'){
+                            sum -= 1000;
+                        }
+                        else{
+                            sum += 1000;
+                        }
+                    }
+                    else if(whiteCount == 0 && redCount == 4){
+                        if(token == 'R'){
+                            sum += 1000;
+                        }
+                        else{
+                            sum -= 1000;
+                        }
+                    }
+                }
+
+                whiteCount = 0;
+                redCount = 0;
+
+                /**
+                 * Horizontal check
+                 */
+                if(k == 3) {
+                    for(int i = 0; i < 4; i++) {
+                        whiteCount = 0;
+                        redCount = 0;
+
+                        if(whiteCount == 4 && redCount == 0) {
+                            if(token == 'R'){
+                                sum -= 1000;
+                            }
+                            else{
+                                sum += 1000;
+                            }
+                        }
+                        else if(whiteCount == 0 && redCount == 4){
+                            if(token == 'R'){
+                                sum += 1000;
+                            }
+                            else{
+                                sum -= 1000;
+                            }
+                        }
+                    }
+                }
+
+                whiteCount = 0;
+                redCount = 0;
+
+                /**
+                 * Diagonal check
+                 */
+
+                if(k == 3){
+
+                    int startRow = 0, startCol = 0;
+                    int i, j;
+
+                    if(k >= l){
+                        if(l < 3){
+                            startRow = 0;
+                            startCol = k - l;
+                        }
+                        else{
+                            startRow = l - 3;
+                            startCol = k - 3;
+                        }
+                    }
+                    else{
+                        startRow = l - 3;
+                        startCol = k - 3;
+                    }
+
+                    for ( ; startRow < 3 && startCol < 4 ; startRow++, startCol++) {
+                        whiteCount = 0;
+                        redCount = 0;
+                        for (i = startRow, j = startCol; i < startRow + 4 && j < startCol + 4; i++, j++) {
+                            if(this.grid[i][j] == 'R') {
+                                redCount++;
+                            } else if(this.grid[i][j] == 'W'){
+                                whiteCount++;
+                            }
+                        }
+                        if(whiteCount == 4 && redCount == 0) {
+                            if(token == 'R'){
+                                sum -= 1000;
+                            }
+                            else{
+                                sum += 1000;
+                            }
+                        }
+                        else if(whiteCount == 0 && redCount == 4){
+                            if(token == 'R'){
+                                sum += 1000;
+                            }
+                            else{
+                                sum -= 1000;
+                            }
+                        }
+                    }
+
+                    if(k >= (5 - l)){
+                        if(l > 2){
+                            startRow = 5;
+                            startCol = k - (5 - l);
+                        }
+                        else{
+                            startRow = l + 3;
+                            startCol = k - 3;
+                        }
+                    }
+                    else{
+                        if(k < 3){
+                            startRow = l + k;
+                            startCol = 0;
+                        }
+                        else{
+                            startRow = l + 3;
+                            startCol = k - 3;
+                        }
+                    }
+
+                    for ( ; startRow > 2 && startCol < 4 ; startRow--, startCol++) {
+                        whiteCount = 0;
+                        redCount = 0;
+                        for (i = startRow, j = startCol; i > startRow - 4 && j < startCol + 4; i--, j++) {
+                            if(this.grid[i][j] == 'R') {
+                                redCount++;
+                            } else if(this.grid[i][j] == 'W'){
+                                whiteCount++;
+                            }
+                        }
+                        if(whiteCount == 4 && redCount == 0) {
+                            if(token == 'R'){
+                                sum -= 1000;
+                            }
+                            else{
+                                sum += 1000;
+                            }
+                        }
+                        else if(whiteCount == 0 && redCount == 4){
+                            if(token == 'R'){
+                                sum += 1000;
+                            }
+                            else{
+                                sum -= 1000;
+                            }
+                        }
+                    }
                 }
             }
         }
-        return utility + sum;
+
+        return sum;
     }
 
     /**

@@ -1,15 +1,21 @@
 package com.raggiadolf.connectfour;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.raggiadolf.connectfour.gameplayingagent.*;
 
+import java.util.List;
+
 public class SinglePlayerActivity extends AppCompatActivity {
+
+    private Difficulty diff;
 
     BoardView m_boardView;
     State m_gameState;
@@ -26,12 +32,19 @@ public class SinglePlayerActivity extends AppCompatActivity {
         m_boardView.setMoveEventHandler(new OnMoveEventHandler() {
             @Override
             public void onMove(int action) {
-                m_gameState.DoMove(action);
-                updateDisplay();
-                m_boardView.setCanMove(false);
-                new AlphaBetaSearchTask().execute(m_gameState);
+                List<Integer> legalMoves = m_gameState.LegalMoves();
+
+                if(legalMoves.contains(action)) { // Check to see whether the move was valid
+                    m_gameState.DoMove(action);
+                    updateDisplay();
+                    m_boardView.setCanMove(false);
+                    new AlphaBetaSearchTask().execute(m_gameState);
+                }
             }
         });
+
+        Intent intent = getIntent();
+        diff = Difficulty.valueOf(intent.getStringExtra("difficulty"));
 
         m_gameState = new State();
         m_boardView.setupBoard(m_gameState.toString());
@@ -75,7 +88,23 @@ public class SinglePlayerActivity extends AppCompatActivity {
             Node nextMove = new Node();
             try {
                 for(int i = 2; i < 42; i++) {
-                    nextMove = abs.AlphaBeta(i, searchState, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1);
+                    switch(diff) {
+                        case easy:
+                            Log.d("abs", "easy");
+                            nextMove = abs.AlphaBetaEasy(i, searchState, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1);
+                            break;
+                        case medium:
+                            Log.d("abs", "medium");
+                            nextMove = abs.AlphaBetaMedium(i, searchState, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1);
+                            break;
+                        case hard:
+                            Log.d("abs", "hard");
+                            nextMove = abs.AlphaBetaHard(i, searchState, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1);
+                            break;
+                        default:
+                            Log.d("abs", "default");
+                            nextMove = abs.AlphaBetaEasy(i, searchState, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1);
+                    }
                     publishProgress(i);
                 }
                 return nextMove.getMove();

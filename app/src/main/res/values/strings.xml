@@ -13,4 +13,10 @@
     <string name="you_are_signed_in">You are signed in with Google.</string>
     <string name="sign_out">Sign out</string>
     <string name="signin_other_error">There was an issue with sign in. Please try again later.</string>
+
+    <string-array name="difficulty_array">
+        <item>easy</item>
+        <item>medium</item>
+        <item>hard</item>
+    </string-array>
 </resources>

@@ -29,7 +29,7 @@ public class BoardView extends View {
 
     private boolean m_canMove = true;
 
-    public char[][] m_board = new char[6][7];
+    private char[][] m_board = new char[6][7];
     private char[][] m_drawingBoard;
 
     private Paint m_discPaint = new Paint();
@@ -44,13 +44,11 @@ public class BoardView extends View {
     private int m_player1Color = getResources().getColor(R.color.player1);
     private int m_player2Color = getResources().getColor(R.color.player2);
     private int m_emptyDisc = Color.WHITE;
-    private Paint m_holePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
     public BoardView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
         m_discPaint.setStyle(Paint.Style.FILL_AND_STROKE);
-        m_holePaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
 
         for(int row = 0; row < 7; row++) {
             m_boardDiscs.add(new ArrayList<RectF>());
@@ -72,16 +70,6 @@ public class BoardView extends View {
         }
 
         invalidate();
-    }
-
-    public String boardToString() {
-        StringBuilder sb = new StringBuilder();
-        for(int row = 0; row < 6; row++) {
-            for(int col = 0; col < 7; col++) {
-                sb.append(m_board[row][col]);
-            }
-        }
-        return sb.toString();
     }
 
     ValueAnimator animator = new ValueAnimator();

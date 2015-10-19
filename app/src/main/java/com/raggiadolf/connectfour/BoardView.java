@@ -29,7 +29,7 @@ public class BoardView extends View {
 
     private boolean m_canMove = true;
 
-    private char[][] m_board = new char[6][7];
+    public char[][] m_board = new char[6][7];
     private char[][] m_drawingBoard;
 
     private Paint m_discPaint = new Paint();
@@ -72,6 +72,16 @@ public class BoardView extends View {
         }
 
         invalidate();
+    }
+
+    public String boardToString() {
+        StringBuilder sb = new StringBuilder();
+        for(int row = 0; row < 6; row++) {
+            for(int col = 0; col < 7; col++) {
+                sb.append(m_board[row][col]);
+            }
+        }
+        return sb.toString();
     }
 
     ValueAnimator animator = new ValueAnimator();

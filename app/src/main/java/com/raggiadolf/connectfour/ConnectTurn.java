@@ -13,18 +13,20 @@ import java.nio.charset.Charset;
  */
 public class ConnectTurn {
     public static final String TAG = "C4Turn";
-    private String action = "";
+    private Integer action = -1;
 
     public ConnectTurn() {
     }
 
-    public ConnectTurn(String action ) {
+    public ConnectTurn(Integer action ) {
         this.action = action;
     }
 
-    public void setAction(String action) {
+    public void setAction(Integer action) {
         this.action = action;
     }
+
+    public Integer getAction() { return this.action; }
 
     public byte[] persist() {
         JSONObject retVal = new JSONObject();
@@ -65,7 +67,7 @@ public class ConnectTurn {
             JSONObject obj = new JSONObject(st);
 
             if (obj.has("action")) {
-                retVal.action = obj.getString("action");
+                retVal.action = obj.getInt("action");
             }
         } catch (JSONException e) {
             e.printStackTrace();

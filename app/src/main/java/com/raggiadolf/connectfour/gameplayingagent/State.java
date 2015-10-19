@@ -35,6 +35,23 @@ public class State {
         this.lastCol = col;
     }
 
+    public State(String player, String grid, int row, int col) {
+        this.player = player;
+        this.lastRow = row;
+        this.lastCol = col;
+
+        this.grid = new char[6][7];
+
+        for(int gridRow = 0, index = 0; gridRow < 6; gridRow++) {
+            for(int gridCol = 0; gridCol < 7; gridCol++, index++) {
+                if(grid.charAt(index) == '0')
+                    this.grid[gridRow][gridCol] = 0;
+                else
+                    this.grid[gridRow][gridCol] = grid.charAt(index);
+            }
+        }
+    }
+
     public State(State that) {
         this.grid = deepCopy(that.grid);
         this.player = that.player;
@@ -58,6 +75,10 @@ public class State {
 
     public char getLastPlayerToken() {
         return Character.toLowerCase(this.player.charAt(0));
+    }
+
+    public String getPlayer() {
+        return this.player;
     }
 
     /**

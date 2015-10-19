@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.service.carrier.CarrierMessagingService;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -17,7 +16,6 @@ import android.widget.Toast;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.common.api.Status;
 import com.google.android.gms.games.Games;
 import com.google.android.gms.games.GamesStatusCodes;
 import com.google.android.gms.games.multiplayer.Invitation;
@@ -33,6 +31,7 @@ import com.google.example.games.basegameutils.BaseGameUtils;
 import com.raggiadolf.connectfour.gameplayingagent.State;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class MultiPlayerActivity extends AppCompatActivity
         implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
@@ -64,10 +63,16 @@ public class MultiPlayerActivity extends AppCompatActivity
     // Current turn-based match
     private TurnBasedMatch m_turnBasedMatch;
 
+    // Local convenience pointers
+    public TextView mDataView;
+    public TextView mTurnTextView;
+
     private AlertDialog m_alertDialog;
 
     // Should I be showing to turn API?
     public boolean isDoingTurn = false;
+
+    public boolean isIngame = false;
 
     // This is the current match we're in; null if not loaded
     public TurnBasedMatch m_match;
@@ -75,7 +80,7 @@ public class MultiPlayerActivity extends AppCompatActivity
     // This is the current match data after being unpersisted.
     // Do not retain references to match data once you have
     // taken an action on the match, such as takeTurn()
-    public ConnectTurn mTurnData;
+    public ConnectFourState mTurnData;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,6 +96,50 @@ public class MultiPlayerActivity extends AppCompatActivity
                 .addApi(Games.API).addScope(Games.SCOPE_GAMES)
                 .build();
 
+        // Setup signin and signout buttons
+        findViewById(R.id.sign_out_button).setOnClickListener(this);
+        findViewById(R.id.sign_in_button).setOnClickListener(this);
+
+        //mDataView = ((TextView) findViewById(R.id.data_view));
+        //mTurnTextView = ((TextView) findViewById(R.id.turn_counter_view));
+
+        m_boardView = (BoardView) findViewById(R.id.boardview);
+
+        m_boardView.setMoveEventHandler(new OnMoveEventHandler() {
+            @Override
+            public void onMove(int action) {
+                List<Integer> legalMoves = m_gameState.LegalMoves();
+
+                if (legalMoves.contains(action)) {
+                    m_gameState.DoMove(action);
+
+                    String nextParticipantId = getNextParticipantId();
+                    updateDisplay();
+                    // Create the next turn
+                    mTurnData.setLastCol(m_gameState.getLastMove());
+                    mTurnData.setLastRow(m_gameState.getLastRow());
+                    mTurnData.setLastPlayer(m_gameState.getPlayer());
+                    mTurnData.setTurnState(m_gameState.toString());
+
+                    Games.TurnBasedMultiplayer.takeTurn(m_googleApiClient, m_match.getMatchId(),
+                            mTurnData.persist(), nextParticipantId).setResultCallback(
+                            new ResultCallback<TurnBasedMultiplayer.UpdateMatchResult>() {
+                                @Override
+                                public void onResult(TurnBasedMultiplayer.UpdateMatchResult result) {
+                                    processResult(result);
+                                }
+                            }
+                    );
+                }
+            }
+        });
+    }
+
+    public void updateDisplay() {
+        m_boardView.placeDisc(m_gameState.getLastMove(), m_gameState.getLastRow(), m_gameState.getLastPlayerToken());
+        if(m_gameState.GoalTest()) {
+            Toast.makeText(getApplicationContext(), "Game over", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
@@ -101,40 +150,21 @@ public class MultiPlayerActivity extends AppCompatActivity
     }
 
     @Override
-    protected void onStop() {
-        Log.d(TAG, "onStop()");
-        super.onStop();
-        if(m_googleApiClient.isConnected()) {
-            m_googleApiClient.disconnect();
-        }
-    }
-
-    private void showSignInBar() {
-        Log.d(TAG, "Showing sign in bar");
-        findViewById(R.id.sign_in_bar).setVisibility(View.VISIBLE);
-        findViewById(R.id.sign_out_bar).setVisibility(View.GONE);
-    }
-
-    private void showSignOutBar() {
-        Log.d(TAG, "Showing sign out bar");
-        findViewById(R.id.sign_in_bar).setVisibility(View.GONE);
-        findViewById(R.id.sign_out_bar).setVisibility(View.VISIBLE);
-    }
-
-    @Override
     public void onClick(View view) {
         switch(view.getId()) {
-            case R.id.button_sign_in:
-                Log.d(TAG, "Sign-in button clicked");
+            case R.id.sign_in_button:
                 m_signinClicked = true;
+                m_turnBasedMatch = null;
+                findViewById(R.id.sign_in_button).setVisibility(View.GONE);
                 m_googleApiClient.connect();
                 break;
-            case R.id.button_sign_out:
-                Log.d(TAG, "Sign-out button clicked");
+            case R.id.sign_out_button:
                 m_signinClicked = false;
                 Games.signOut(m_googleApiClient);
-                m_googleApiClient.disconnect();
-                showSignInBar();
+                if(m_googleApiClient.isConnected()) {
+                    m_googleApiClient.disconnect();
+                }
+                setViewVisibility();
                 break;
         }
     }
@@ -178,13 +208,18 @@ public class MultiPlayerActivity extends AppCompatActivity
                 return;
             }
         }
-        showSignOutBar();
+        setViewVisibility();
+
+        // Might not be needed
+        Games.Invitations.registerInvitationListener(m_googleApiClient, this);
+        Games.TurnBasedMultiplayer.registerMatchUpdateListener(m_googleApiClient, this);
     }
 
     @Override
     public void onConnectionSuspended(int i) {
         Log.d(TAG, "onConnectionSuspended() called. Trying to reconnect");
         m_googleApiClient.connect();
+        setViewVisibility();
     }
 
     @Override
@@ -201,6 +236,8 @@ public class MultiPlayerActivity extends AppCompatActivity
             m_ResolvingConnectionFailure = BaseGameUtils.resolveConnectionFailure(this, m_googleApiClient,
                     connectionResult, RC_SIGN_IN, getString(R.string.signin_other_error));
         }
+
+        setViewVisibility();
     }
 
     // Displays your inbox. You will get back onActivityResult where
@@ -251,7 +288,7 @@ public class MultiPlayerActivity extends AppCompatActivity
                     }
                 });
         isDoingTurn = false;
-        // setViewVisibility();
+        setViewVisibility();
     }
 
     // Leave the game during your turn. Note that there is a seperate
@@ -269,7 +306,7 @@ public class MultiPlayerActivity extends AppCompatActivity
                     }
                 }
         );
-        // setViewVisibility();
+        setViewVisibility();
     }
 
     // Finish the game. Sometimes, this is your only choice.
@@ -284,7 +321,7 @@ public class MultiPlayerActivity extends AppCompatActivity
                 });
 
         isDoingTurn = false;
-        // setViewVisibility();
+        setViewVisibility();
     }
 
     // Upload your new gamestate, then take a turn, and pass it on to the next player.
@@ -293,7 +330,8 @@ public class MultiPlayerActivity extends AppCompatActivity
 
         String nextParticipantId = getNextParticipantId();
         // Create the next turn
-        // mTurnData.data = mDataView.getText().toString();
+        //mTurnData.setAction("3");
+        //mTurnData.turnCounter += 1;
 
         showSpinner();
 
@@ -315,7 +353,6 @@ public class MultiPlayerActivity extends AppCompatActivity
     @Override
     protected void onActivityResult(int requestCode, int responseCode, Intent intent) {
         if(requestCode == RC_SIGN_IN) {
-            Log.d(TAG, "onActivityResult with requestCode == RC_SIGN_IN, responseCode=" + responseCode + ", intent= " + intent);
             m_signinClicked = false;
             m_ResolvingConnectionFailure = false;
             if(responseCode == RESULT_OK) {
@@ -325,8 +362,30 @@ public class MultiPlayerActivity extends AppCompatActivity
             }
         }
 
+        if(requestCode == RC_LOOK_AT_MATCHES) {
+            // Returning from the 'Select match' dialog
+            Log.d(TAG, "RC_LOOK_AT_MATCHES");
+
+            if (responseCode != Activity.RESULT_OK) {
+                // User cancelled
+                return;
+            }
+
+            TurnBasedMatch match = intent.getParcelableExtra(Multiplayer.EXTRA_TURN_BASED_MATCH);
+
+            if (match != null) {
+                Log.d(TAG, "updateMatch(match) called");
+                isIngame = true;
+                updateMatch(match);
+            }
+
+            Log.d(TAG, "Match = " + match);
+        }
+
         if(requestCode == RC_SELECT_PLAYERS) {
-            if (requestCode != Activity.RESULT_OK) {
+            // Returned from 'Select players to invite' dialog
+            Log.d("onActivityResult", "RC_SELECT_PLAYERS");
+            if (responseCode != Activity.RESULT_OK) {
                 // user canceled
                 return;
             }
@@ -362,6 +421,7 @@ public class MultiPlayerActivity extends AppCompatActivity
                             processResult(result);
                         }
                     });
+            showSpinner();
         }
     }
 
@@ -369,10 +429,10 @@ public class MultiPlayerActivity extends AppCompatActivity
         boolean isSignedIn = (m_googleApiClient != null) && (m_googleApiClient.isConnected());
 
         if(!isSignedIn) {
-            /*findViewById(R.id.login_layout).setVisibility(View.VISIBLE);
+            findViewById(R.id.login_layout).setVisibility(View.VISIBLE);
             findViewById(R.id.sign_in_button).setVisibility(View.VISIBLE);
             findViewById(R.id.matchup_layout).setVisibility(View.GONE);
-            findViewById(R.id.gameplay_layout).setVisibility(View.GONE);*/
+            findViewById(R.id.gameplay_layout).setVisibility(View.GONE);
 
             if (m_alertDialog != null) {
                 m_alertDialog.dismiss();
@@ -381,35 +441,40 @@ public class MultiPlayerActivity extends AppCompatActivity
         }
 
 
-        /*((TextView) findViewById(R.id.name_field)).setText(Games.Players.getCurrentPlayer(
+        ((TextView) findViewById(R.id.name_field)).setText(Games.Players.getCurrentPlayer(
                 m_googleApiClient).getDisplayName());
         findViewById(R.id.login_layout).setVisibility(View.GONE);
 
         if (isDoingTurn) {
+            m_boardView.setCanMove(true);
+        } else {
+            m_boardView.setCanMove(false);
+        }
+
+        if(isIngame) {
             findViewById(R.id.matchup_layout).setVisibility(View.GONE);
             findViewById(R.id.gameplay_layout).setVisibility(View.VISIBLE);
         } else {
             findViewById(R.id.matchup_layout).setVisibility(View.VISIBLE);
             findViewById(R.id.gameplay_layout).setVisibility(View.GONE);
-        }*/
+        }
     }
 
     // Switch to gameplay view.
     public void setGameplayUI() {
         isDoingTurn = true;
         setViewVisibility();
-        //mDataView.setDext(mTurnData.data);
-        //mTurnTextView.setText("Turn " + mTurnData.turnCounter);
+        // TODO: Display the last move made?
     }
 
     // Helpful dialogs
 
     public void showSpinner() {
-        //findViewById(R.id.progressLayout).setVisibility(View.VISIBLE);
+        findViewById(R.id.progressLayout).setVisibility(View.VISIBLE);
     }
 
     public void dismissSpinner() {
-        //findViewById(R.id.progressLayout).setVisibility(View.GONE);
+        findViewById(R.id.progressLayout).setVisibility(View.GONE);
     }
 
     // Generic warning/info dialog
@@ -473,7 +538,11 @@ public class MultiPlayerActivity extends AppCompatActivity
 
     @Override
     public void onTurnBasedMatchReceived(TurnBasedMatch turnBasedMatch) {
-        Toast.makeText(this, "A match was updated.", Toast.LENGTH_SHORT).show();
+        // Match updated, drop the disc into the new disc into the correct slot, update the state
+        // and allow the user to make the next move.
+        m_match = turnBasedMatch;
+
+        updateMatch(m_match);
     }
 
     @Override
@@ -488,9 +557,9 @@ public class MultiPlayerActivity extends AppCompatActivity
     // callback to OnTurnBasedMatchUpdated(), which will show the game
     // UI.
     public void startMatch(TurnBasedMatch match) {
-        mTurnData = new ConnectTurn();
-        // Some basic turn data
-        mTurnData.setAction("First turn");
+        m_gameState = new State();
+        mTurnData = new ConnectFourState();
+        isIngame = true;
 
         m_match = match;
 
@@ -598,13 +667,55 @@ public class MultiPlayerActivity extends AppCompatActivity
         // OK, it's active. Check on turn status.
         switch (turnStatus) {
             case TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN:
-                mTurnData = ConnectTurn.unpersist(m_match.getData());
-                setGameplayUI();
+                mTurnData = ConnectFourState.unpersist(m_match.getData());
+                if(mTurnData == null) {
+                    // Log error?
+                    Log.d("mTurnData", "Turn Data is null, possibly an error.");
+                } else {
+                    if(m_gameState == null) { // Reconstruct the state
+                        Log.d(TAG, "Reconstructing state");
+                        if(mTurnData.getTurnState() != null) {
+                            m_gameState = new State(mTurnData.getLastPlayer(), mTurnData.getTurnState(), mTurnData.getLastRow(), mTurnData.getLastCol());
+                        } else {
+                            m_gameState = new State();
+                        }
+                    } else { // Update the gamestate ?
+                        if(mTurnData.getTurnState() != null) {
+                            m_gameState.DoMove(mTurnData.getLastCol());
+                        }
+                    }
+                    m_boardView.setupBoard(m_gameState.toString());
+                    // TODO: Get animation for last placed disc?
+                    updateDisplay();
+                    setGameplayUI();
+                }
+
                 return;
+
+
             case TurnBasedMatch.MATCH_TURN_STATUS_THEIR_TURN:
                 // Should return results.
-                showWarning("Alas...", "It's not your turn.");
+                Log.d("THEIR_TURN", "unpersisting and updating display.");
+                mTurnData = ConnectFourState.unpersist(m_match.getData());
+                if(mTurnData == null) {
+                    // Log error?
+                    Log.d("mTurnData", "Turn Data is null, possibly an error.");
+                } else {
+                    if(m_gameState == null) { // Reconstruct the state
+                        Log.d(TAG, "Reconstructing the state");
+                        m_gameState = new State(mTurnData.getLastPlayer(), mTurnData.getTurnState(), mTurnData.getLastRow(), mTurnData.getLastCol());
+                        m_boardView.setupBoard(m_gameState.toString());
+                        setViewVisibility();
+                    } else {
+                        m_boardView.setupBoard(m_gameState.toString());
+                        setViewVisibility();
+                    }
+                }
+                // Display warning about waiting until its your turn?
+                //showWarning("Alas...", "It's not your turn.");
                 break;
+
+
             case TurnBasedMatch.MATCH_TURN_STATUS_INVITED:
                 showWarning("Good inititative!",
                         "Still waiting for invitations.\n\nBe patient!");
@@ -629,6 +740,8 @@ public class MultiPlayerActivity extends AppCompatActivity
     }
 
     private void processResult(TurnBasedMultiplayer.InitiateMatchResult result) {
+        Log.d(TAG, "Iniating match");
+        Log.d("result", "" + result);
         TurnBasedMatch match = result.getMatch();
         dismissSpinner();
 
@@ -637,6 +750,7 @@ public class MultiPlayerActivity extends AppCompatActivity
         }
 
         if (match.getData() != null) {
+            Log.d("match.getData() != null", "updateMatch(match)");
             // This is a game that has already started, so I'll just start
             updateMatch(match);
             return;
@@ -653,6 +767,7 @@ public class MultiPlayerActivity extends AppCompatActivity
         }
         isDoingTurn = (match.getTurnStatus() == TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN);
         showWarning("Left", "You've left this match.");
+        isIngame = false;
     }
 
 
@@ -689,12 +804,6 @@ public class MultiPlayerActivity extends AppCompatActivity
             case GamesStatusCodes.STATUS_NETWORK_ERROR_OPERATION_DEFERRED:
                 // This is OK; the action is stored by Google Play Services and will
                 // be dealt with later.
-                Toast.makeText(
-                        this,
-                        "Stored action for later.  (Please remove this toast before release.)",
-                        Toast.LENGTH_SHORT).show();
-                // NOTE: This toast is for informative reasons only; please remove
-                // it from your final application.
                 return true;
             case GamesStatusCodes.STATUS_MULTIPLAYER_ERROR_NOT_TRUSTED_TESTER:
                 showErrorMessage(match, statusCode,

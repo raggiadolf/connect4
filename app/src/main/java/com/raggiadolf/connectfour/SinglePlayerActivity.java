@@ -90,19 +90,15 @@ public class SinglePlayerActivity extends AppCompatActivity {
                 for(int i = 2; i < 42; i++) {
                     switch(diff) {
                         case easy:
-                            Log.d("abs", "easy");
                             nextMove = abs.AlphaBetaEasy(i, searchState, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1);
                             break;
                         case medium:
-                            Log.d("abs", "medium");
                             nextMove = abs.AlphaBetaMedium(i, searchState, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1);
                             break;
                         case hard:
-                            Log.d("abs", "hard");
                             nextMove = abs.AlphaBetaHard(i, searchState, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1);
                             break;
                         default:
-                            Log.d("abs", "default");
                             nextMove = abs.AlphaBetaEasy(i, searchState, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1);
                     }
                     publishProgress(i);

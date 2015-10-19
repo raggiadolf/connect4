@@ -679,13 +679,15 @@ public class MultiPlayerActivity extends AppCompatActivity
                         } else {
                             m_gameState = new State();
                         }
-                    } else { // Update the gamestate ?
+                    } else { // Update the gamestate
                         if(mTurnData.getTurnState() != null) {
                             m_gameState.DoMove(mTurnData.getLastCol());
+                        } else {
+                            m_boardView.setupBoard(m_gameState.toString());
+                            setGameplayUI();
+                            return;
                         }
                     }
-                    m_boardView.setupBoard(m_gameState.toString());
-                    // TODO: Get animation for last placed disc?
                     updateDisplay();
                     setGameplayUI();
                 }
@@ -740,8 +742,6 @@ public class MultiPlayerActivity extends AppCompatActivity
     }
 
     private void processResult(TurnBasedMultiplayer.InitiateMatchResult result) {
-        Log.d(TAG, "Iniating match");
-        Log.d("result", "" + result);
         TurnBasedMatch match = result.getMatch();
         dismissSpinner();
 

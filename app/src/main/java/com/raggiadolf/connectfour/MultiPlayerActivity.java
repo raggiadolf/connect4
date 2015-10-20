@@ -470,6 +470,9 @@ public class MultiPlayerActivity extends AppCompatActivity
         if(isIngame) {
             findViewById(R.id.matchup_layout).setVisibility(View.GONE);
             findViewById(R.id.gameplay_layout).setVisibility(View.VISIBLE);
+            //Participant opponent = m_turnBasedMatch.getDescriptionParticipant(); // Get the opposing participant
+            //opponent.getDisplayName(); // Got the name of the opponent.
+            // Find out how to get the profile image
         } else {
             findViewById(R.id.matchup_layout).setVisibility(View.VISIBLE);
             findViewById(R.id.gameplay_layout).setVisibility(View.GONE);

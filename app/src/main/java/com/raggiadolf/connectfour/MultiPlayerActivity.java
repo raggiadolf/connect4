@@ -10,12 +10,14 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.images.ImageManager;
 import com.google.android.gms.games.Games;
 import com.google.android.gms.games.GamesStatusCodes;
 import com.google.android.gms.games.multiplayer.Invitation;
@@ -67,6 +69,8 @@ public class MultiPlayerActivity extends AppCompatActivity
     // Local convenience pointers
     public TextView mDataView;
     public TextView mTurnTextView;
+    private ImageView mUserImage;
+    private TextView mUserDisplayName;
 
     private AlertDialog m_alertDialog;
 
@@ -83,11 +87,16 @@ public class MultiPlayerActivity extends AppCompatActivity
     // taken an action on the match, such as takeTurn()
     public ConnectFourState mTurnData;
 
+    private ImageManager imageManager;
+    private Participant mOpponent = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate()");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_multi_player);
+
+        imageManager = ImageManager.create(this);
 
         // Create the Google Api Client with access to Plus and Games
         m_googleApiClient = new GoogleApiClient.Builder(this)
@@ -103,6 +112,8 @@ public class MultiPlayerActivity extends AppCompatActivity
 
         //mDataView = ((TextView) findViewById(R.id.data_view));
         //mTurnTextView = ((TextView) findViewById(R.id.turn_counter_view));
+        mUserImage = (ImageView) findViewById(R.id.userimage);
+        mUserDisplayName = (TextView) findViewById(R.id.userdisplayname);
 
         m_boardView = (BoardView) findViewById(R.id.boardview);
 
@@ -471,8 +482,10 @@ public class MultiPlayerActivity extends AppCompatActivity
             findViewById(R.id.matchup_layout).setVisibility(View.GONE);
             findViewById(R.id.gameplay_layout).setVisibility(View.VISIBLE);
             //Participant opponent = m_turnBasedMatch.getDescriptionParticipant(); // Get the opposing participant
-            //opponent.getDisplayName(); // Got the name of the opponent.
-            // Find out how to get the profile image
+            if (mOpponent != null) {
+                imageManager.loadImage(mUserImage, mOpponent.getIconImageUri());
+                mUserDisplayName.setText(mOpponent.getDisplayName());
+            }
         } else {
             findViewById(R.id.matchup_layout).setVisibility(View.VISIBLE);
             findViewById(R.id.gameplay_layout).setVisibility(View.GONE);
@@ -657,6 +670,8 @@ public class MultiPlayerActivity extends AppCompatActivity
 
         int status = match.getStatus();
         int turnStatus = match.getTurnStatus();
+
+        mOpponent = match.getDescriptionParticipant();
 
         switch (status) {
             case TurnBasedMatch.MATCH_STATUS_CANCELED:

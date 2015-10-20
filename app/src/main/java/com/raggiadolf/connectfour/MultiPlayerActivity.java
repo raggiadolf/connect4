@@ -21,6 +21,7 @@ import com.google.android.gms.games.GamesStatusCodes;
 import com.google.android.gms.games.multiplayer.Invitation;
 import com.google.android.gms.games.multiplayer.Multiplayer;
 import com.google.android.gms.games.multiplayer.OnInvitationReceivedListener;
+import com.google.android.gms.games.multiplayer.Participant;
 import com.google.android.gms.games.multiplayer.realtime.RoomConfig;
 import com.google.android.gms.games.multiplayer.turnbased.OnTurnBasedMatchUpdateReceivedListener;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatch;
@@ -113,6 +114,7 @@ public class MultiPlayerActivity extends AppCompatActivity
                 if (legalMoves.contains(action)) {
                     m_gameState.DoMove(action);
 
+
                     String nextParticipantId = getNextParticipantId();
                     updateDisplay();
                     // Create the next turn
@@ -121,15 +123,27 @@ public class MultiPlayerActivity extends AppCompatActivity
                     mTurnData.setLastPlayer(m_gameState.getPlayer());
                     mTurnData.setTurnState(m_gameState.toString());
 
-                    Games.TurnBasedMultiplayer.takeTurn(m_googleApiClient, m_match.getMatchId(),
-                            mTurnData.persist(), nextParticipantId).setResultCallback(
-                            new ResultCallback<TurnBasedMultiplayer.UpdateMatchResult>() {
-                                @Override
-                                public void onResult(TurnBasedMultiplayer.UpdateMatchResult result) {
-                                    processResult(result);
+                    if (m_gameState.GoalTest()) {
+                        Toast.makeText(getApplicationContext(), "I won!", Toast.LENGTH_LONG).show();
+
+                        Games.TurnBasedMultiplayer.finishMatch(m_googleApiClient, m_match.getMatchId(), mTurnData.persist())
+                                .setResultCallback(new ResultCallback<TurnBasedMultiplayer.UpdateMatchResult>() {
+                                    @Override
+                                    public void onResult(TurnBasedMultiplayer.UpdateMatchResult result) {
+                                        processResult(result);
+                                    }
+                                });
+                    } else {
+                        Games.TurnBasedMultiplayer.takeTurn(m_googleApiClient, m_match.getMatchId(),
+                                mTurnData.persist(), nextParticipantId).setResultCallback(
+                                new ResultCallback<TurnBasedMultiplayer.UpdateMatchResult>() {
+                                    @Override
+                                    public void onResult(TurnBasedMultiplayer.UpdateMatchResult result) {
+                                        processResult(result);
+                                    }
                                 }
-                            }
-                    );
+                        );
+                    }
                 }
             }
         });
@@ -137,9 +151,11 @@ public class MultiPlayerActivity extends AppCompatActivity
 
     public void updateDisplay() {
         m_boardView.placeDisc(m_gameState.getLastMove(), m_gameState.getLastRow(), m_gameState.getLastPlayerToken());
+        /*
         if(m_gameState.GoalTest()) {
             Toast.makeText(getApplicationContext(), "Game over", Toast.LENGTH_SHORT).show();
         }
+        */
     }
 
     @Override
@@ -651,17 +667,20 @@ public class MultiPlayerActivity extends AppCompatActivity
                         "We're still waiting for an automatch partner.");
                 return;
             case TurnBasedMatch.MATCH_STATUS_COMPLETE:
-                if (turnStatus == TurnBasedMatch.MATCH_TURN_STATUS_COMPLETE) {
-                    showWarning(
-                            "Complete!",
-                            "This game is over; someone finished it, and so did you!  There is nothing to be done.");
-                    break;
-                }
-
-                // Note that in this state, you must still call "Finish" yourself,
-                // so we allow this to continue.
-                showWarning("Complete!",
-                        "This game is over; someone finished it!  You can only finish it now.");
+                /*
+                showWarning(
+                        "Complete!",
+                        "This game is over; someone finished it, and so did you!  There is nothing to be done.");
+                */
+                Toast.makeText(this, "I lost!", Toast.LENGTH_LONG).show();
+                Games.TurnBasedMultiplayer.finishMatch(m_googleApiClient, m_match.getMatchId())
+                        .setResultCallback(new ResultCallback<TurnBasedMultiplayer.UpdateMatchResult>() {
+                            @Override
+                            public void onResult(TurnBasedMultiplayer.UpdateMatchResult result) {
+                                processResult(result);
+                            }
+                        });
+                break;
         }
 
         // OK, it's active. Check on turn status.
@@ -676,6 +695,9 @@ public class MultiPlayerActivity extends AppCompatActivity
                         Log.d(TAG, "Reconstructing state");
                         if(mTurnData.getTurnState() != null) {
                             m_gameState = new State(mTurnData.getLastPlayer(), mTurnData.getTurnState(), mTurnData.getLastRow(), mTurnData.getLastCol());
+                            m_boardView.setupBoard(m_gameState.toString());
+                            setGameplayUI();
+                            return;
                         } else {
                             m_gameState = new State();
                         }
@@ -697,7 +719,6 @@ public class MultiPlayerActivity extends AppCompatActivity
 
             case TurnBasedMatch.MATCH_TURN_STATUS_THEIR_TURN:
                 // Should return results.
-                Log.d("THEIR_TURN", "unpersisting and updating display.");
                 mTurnData = ConnectFourState.unpersist(m_match.getData());
                 if(mTurnData == null) {
                     // Log error?
@@ -706,13 +727,10 @@ public class MultiPlayerActivity extends AppCompatActivity
                     if(m_gameState == null) { // Reconstruct the state
                         Log.d(TAG, "Reconstructing the state");
                         m_gameState = new State(mTurnData.getLastPlayer(), mTurnData.getTurnState(), mTurnData.getLastRow(), mTurnData.getLastCol());
-                        m_boardView.setupBoard(m_gameState.toString());
-                        setViewVisibility();
-                    } else {
-                        m_boardView.setupBoard(m_gameState.toString());
-                        setViewVisibility();
                     }
                 }
+                m_boardView.setupBoard(m_gameState.toString());
+                setViewVisibility();
                 // Display warning about waiting until its your turn?
                 //showWarning("Alas...", "It's not your turn.");
                 break;
@@ -774,11 +792,22 @@ public class MultiPlayerActivity extends AppCompatActivity
     public void processResult(TurnBasedMultiplayer.UpdateMatchResult result) {
         TurnBasedMatch match = result.getMatch();
         dismissSpinner();
+        /*
         if (!checkStatusCode(match, result.getStatus().getStatusCode())) {
             return;
         }
+        */
+        /*
         if (match.canRematch()) {
             askForRematch();
+        }
+        */
+
+        if(match.getStatus() == TurnBasedMatch.MATCH_STATUS_COMPLETE) {
+            // Match ended, figure out who won?
+            // Display a game over activity.
+            // Allow players to rematch if they want to?
+            Toast.makeText(this, "Game finished.", Toast.LENGTH_LONG).show();
         }
 
         isDoingTurn = (match.getTurnStatus() == TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN);

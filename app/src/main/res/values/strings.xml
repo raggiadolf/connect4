@@ -24,6 +24,8 @@
     <string name="start_match">Start Match</string>
     <string name="quick_match">Quick match</string>
     <string name="user_profile">User profile picture</string>
+    <string name="rematch">Rematch</string>
+    <string name="quit">Quit</string>
 
     <string-array name="difficulty_array">
         <item>easy</item>

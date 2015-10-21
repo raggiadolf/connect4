@@ -4,9 +4,15 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.raggiadolf.connectfour.gameplayingagent.*;
@@ -16,9 +22,16 @@ import java.util.List;
 public class SinglePlayerActivity extends AppCompatActivity {
 
     private Difficulty diff;
+    private boolean mGameOver = false;
+    private boolean mPlayersTurn = true;
 
-    BoardView m_boardView;
-    State m_gameState;
+    private BoardView m_boardView;
+    private State m_gameState;
+
+    private LinearLayout mGameOverMessage;
+    private TextView mGameOverText;
+    private Animation mAnimSlideIn;
+
 
     private static int playclock = 1;
 
@@ -28,17 +41,23 @@ public class SinglePlayerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_single_player);
 
         m_boardView = (BoardView) findViewById(R.id.boardview);
+        mGameOverMessage = (LinearLayout) findViewById(R.id.gameovermessage);
+        mGameOverText = (TextView) findViewById(R.id.gameovertext);
+        mAnimSlideIn = AnimationUtils.loadAnimation(this, R.anim.anim_slide_in_from_left);
 
         m_boardView.setMoveEventHandler(new OnMoveEventHandler() {
             @Override
             public void onMove(int action) {
                 List<Integer> legalMoves = m_gameState.LegalMoves();
 
-                if(legalMoves.contains(action)) { // Check to see whether the move was valid
+                if(legalMoves.contains(action) && !mGameOver) { // Check to see whether the move was valid
                     m_gameState.DoMove(action);
+                    mPlayersTurn = true;
                     updateDisplay();
                     m_boardView.setCanMove(false);
-                    new AlphaBetaSearchTask().execute(m_gameState);
+                    if(!mGameOver) {
+                        new AlphaBetaSearchTask().execute(m_gameState);
+                    }
                 }
             }
         });
@@ -56,6 +75,8 @@ public class SinglePlayerActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.menu_single_player, menu);
         return true;
     }
+
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -76,8 +97,31 @@ public class SinglePlayerActivity extends AppCompatActivity {
         //m_boardView.setBoard(m_gameState.toString());
         m_boardView.placeDisc(m_gameState.getLastMove(), m_gameState.getLastRow(), m_gameState.getLastPlayerToken());
         if(m_gameState.GoalTest()) {
-            Toast.makeText(getApplicationContext(), "Game over", Toast.LENGTH_SHORT).show();
+            // Player won!
+            mGameOver = true;
+            if(mPlayersTurn) {
+                mGameOverText.setText("You won!");
+                mGameOverMessage.setBackgroundColor(getResources().getColor(R.color.player2));
+            } else {
+                mGameOverText.setText("You lost.");
+                mGameOverMessage.setBackgroundColor(getResources().getColor(R.color.player1));
+            }
+            // Slide in gameover
+            mGameOverMessage.startAnimation(mAnimSlideIn);
+            mGameOverMessage.setVisibility(View.VISIBLE);
         }
+    }
+
+    public void rematch(View view) {
+        Intent intent = new Intent(this, SinglePlayerActivity.class);
+        intent.putExtra("difficulty", diff.toString());
+        startActivity(intent);
+    }
+
+    public void backToMainMenu(View view) {
+        Intent intent = new Intent(this, MainMenuActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
     }
 
     private class AlphaBetaSearchTask extends AsyncTask<State, Integer, Integer> {
@@ -121,6 +165,7 @@ public class SinglePlayerActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Integer action) {
             m_gameState.DoMove(action);
+            mPlayersTurn = false;
             updateDisplay();
             m_boardView.setCanMove(true);
         }

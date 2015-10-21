@@ -23,6 +23,7 @@
     <string name="check_games">Check games</string>
     <string name="start_match">Start Match</string>
     <string name="quick_match">Quick match</string>
+    <string name="oppo_profile">Opponent profile picture</string>
     <string name="user_profile">User profile picture</string>
     <string name="rematch">Rematch</string>
     <string name="quit">Quit</string>

@@ -30,6 +30,7 @@ import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatch;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatchConfig;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMultiplayer;
 import com.google.android.gms.plus.Plus;
+import com.google.android.gms.plus.model.people.Person;
 import com.google.example.games.basegameutils.BaseGameUtils;
 import com.raggiadolf.connectfour.gameplayingagent.State;
 
@@ -67,8 +68,8 @@ public class MultiPlayerActivity extends AppCompatActivity
     private TurnBasedMatch m_turnBasedMatch;
 
     // Local convenience pointers
-    public TextView mDataView;
-    public TextView mTurnTextView;
+    private ImageView mOpponentImage;
+    private TextView mOpponentDisplayName;
     private ImageView mUserImage;
     private TextView mUserDisplayName;
 
@@ -89,6 +90,7 @@ public class MultiPlayerActivity extends AppCompatActivity
 
     private ImageManager imageManager;
     private Participant mOpponent = null;
+    private Participant mUser = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -110,8 +112,8 @@ public class MultiPlayerActivity extends AppCompatActivity
         findViewById(R.id.sign_out_button).setOnClickListener(this);
         findViewById(R.id.sign_in_button).setOnClickListener(this);
 
-        //mDataView = ((TextView) findViewById(R.id.data_view));
-        //mTurnTextView = ((TextView) findViewById(R.id.turn_counter_view));
+        mOpponentImage = (ImageView) findViewById(R.id.opponentimage);
+        mOpponentDisplayName = (TextView) findViewById(R.id.opponentdisplayname);
         mUserImage = (ImageView) findViewById(R.id.userimage);
         mUserDisplayName = (TextView) findViewById(R.id.userdisplayname);
 
@@ -356,9 +358,6 @@ public class MultiPlayerActivity extends AppCompatActivity
         showSpinner();
 
         String nextParticipantId = getNextParticipantId();
-        // Create the next turn
-        //mTurnData.setAction("3");
-        //mTurnData.turnCounter += 1;
 
         showSpinner();
 
@@ -481,10 +480,13 @@ public class MultiPlayerActivity extends AppCompatActivity
         if(isIngame) {
             findViewById(R.id.matchup_layout).setVisibility(View.GONE);
             findViewById(R.id.gameplay_layout).setVisibility(View.VISIBLE);
-            //Participant opponent = m_turnBasedMatch.getDescriptionParticipant(); // Get the opposing participant
+
+            imageManager.loadImage(mUserImage, mUser.getIconImageUri());
+            mUserDisplayName.setText(mUser.getDisplayName());
+
             if (mOpponent != null) {
-                imageManager.loadImage(mUserImage, mOpponent.getIconImageUri());
-                mUserDisplayName.setText(mOpponent.getDisplayName());
+                imageManager.loadImage(mOpponentImage, mOpponent.getIconImageUri());
+                mOpponentDisplayName.setText(mOpponent.getDisplayName());
             }
         } else {
             findViewById(R.id.matchup_layout).setVisibility(View.VISIBLE);
@@ -672,6 +674,7 @@ public class MultiPlayerActivity extends AppCompatActivity
         int turnStatus = match.getTurnStatus();
 
         mOpponent = match.getDescriptionParticipant();
+        mUser = match.getParticipant(match.getParticipantId(Games.Players.getCurrentPlayerId(m_googleApiClient)));
 
         switch (status) {
             case TurnBasedMatch.MATCH_STATUS_CANCELED:

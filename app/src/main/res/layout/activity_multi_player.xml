@@ -203,7 +203,9 @@
                 android:layout_gravity="center_horizontal"
                 android:layout_margin="@dimen/margin_small"
                 android:text=""
-                android:textAppearance="@style/HelpText.Caption" />
+                android:textAppearance="@style/HelpText.Caption"
+                android:textColor="#fff"
+                />
 
             <Button
                 android:id="@+id/sign_out_button"

@@ -71,8 +71,8 @@
 
                 <com.pkmmte.view.CircularImageView
                     android:id="@+id/userimage"
-                    android:layout_width="25dp"
-                    android:layout_height="25dp"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
                     android:contentDescription="@string/user_profile"
                     android:scaleType="fitXY"
                     android:layout_gravity="start"
@@ -83,7 +83,7 @@
                     android:id="@+id/userdisplayname"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="12sp"
+                    android:textSize="10sp"
                     android:layout_gravity="start"
                     android:textColor="#000"
                     />
@@ -100,8 +100,8 @@
 
                 <com.pkmmte.view.CircularImageView
                     android:id="@+id/opponentimage"
-                    android:layout_width="25dp"
-                    android:layout_height="25dp"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
                     android:contentDescription="@string/oppo_profile"
                     android:scaleType="fitXY"
                     android:layout_gravity="end"
@@ -112,7 +112,7 @@
                     android:id="@+id/opponentdisplayname"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="12sp"
+                    android:textSize="10sp"
                     android:layout_gravity="end"
                     android:textColor="#000"
                     />
@@ -154,7 +154,6 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center"
-
             >
 
             <Button

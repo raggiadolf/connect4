@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="boardbackground">#fff03c</color>
-    <color name="player1">#ff3d11</color>
-    <color name="player2">#000000</color>
-    <color name="userDisplayBackground">#b0fcff</color>
+    <color name="boardbackground">#0b59a2</color>
+    <color name="player1">#bd2720</color>
+    <color name="player2">#e6c520</color>
+    <color name="blankSquare">#303030</color>
+    <color name="userDisplayBackground">#ebf5f5</color>
 </resources>

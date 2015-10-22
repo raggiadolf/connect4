@@ -43,7 +43,7 @@ public class BoardView extends View {
 
     private int m_player1Color = getResources().getColor(R.color.player1);
     private int m_player2Color = getResources().getColor(R.color.player2);
-    private int m_emptyDisc = Color.WHITE;
+    private int m_emptyDisc = getResources().getColor(R.color.blankSquare);
 
     public BoardView(Context context, AttributeSet attrs) {
         super(context, attrs);

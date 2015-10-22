@@ -86,6 +86,51 @@
 
     </LinearLayout>
 
+    <LinearLayout
+        android:id="@+id/gameovermessage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:visibility="gone"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:alpha="0.85"
+        >
+
+        <TextView
+            android:id="@+id/gameovertext"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textColor="#fff"
+            android:textSize="25sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+
+            >
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/rematch"
+                android:onClick="rematch"
+                />
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/quit"
+                android:onClick="backToMainMenu"
+                />
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+
     <RelativeLayout
         android:id="@+id/matchup_layout"
         android:layout_width="wrap_content"

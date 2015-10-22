@@ -60,6 +60,7 @@
             android:background="@color/userDisplayBackground"
             android:orientation="horizontal"
             android:padding="5dp"
+            android:layout_marginBottom="20dp"
             >
 
             <LinearLayout
@@ -122,10 +123,10 @@
         </LinearLayout>
 
         <com.raggiadolf.connectfour.BoardView
-        android:id="@+id/boardview"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/boardbackground"
+            android:id="@+id/boardview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/shape"
         />
 
     </LinearLayout>

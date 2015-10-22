@@ -3,4 +3,5 @@
     <color name="boardbackground">#fff03c</color>
     <color name="player1">#ff3d11</color>
     <color name="player2">#000000</color>
+    <color name="userDisplayBackground">#b0fcff</color>
 </resources>

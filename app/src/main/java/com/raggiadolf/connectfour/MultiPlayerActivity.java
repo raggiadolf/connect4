@@ -4,6 +4,9 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.net.Uri;
+import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -34,8 +37,13 @@ import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatchConfig;
 import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMultiplayer;
 import com.google.android.gms.plus.Plus;
 import com.google.example.games.basegameutils.BaseGameUtils;
+import com.koushikdutta.async.future.FutureCallback;
+import com.koushikdutta.ion.Ion;
+import com.pkmmte.view.CircularImageView;
 import com.raggiadolf.connectfour.gameplayingagent.State;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -70,9 +78,9 @@ public class MultiPlayerActivity extends AppCompatActivity
     private TurnBasedMatch m_turnBasedMatch;
 
     // Local convenience pointers
-    private ImageView mOpponentImage;
+    private CircularImageView mOpponentImage;
     private TextView mOpponentDisplayName;
-    private ImageView mUserImage;
+    private CircularImageView mUserImage;
     private TextView mUserDisplayName;
 
     private LinearLayout mGameOverMessage;
@@ -97,6 +105,7 @@ public class MultiPlayerActivity extends AppCompatActivity
     private ImageManager imageManager;
     private Participant mOpponent = null;
     private Participant mUser = null;
+    private Integer mUserColor = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -118,9 +127,9 @@ public class MultiPlayerActivity extends AppCompatActivity
         findViewById(R.id.sign_out_button).setOnClickListener(this);
         findViewById(R.id.sign_in_button).setOnClickListener(this);
 
-        mOpponentImage = (ImageView) findViewById(R.id.opponentimage);
+        mOpponentImage = (CircularImageView) findViewById(R.id.opponentimage);
         mOpponentDisplayName = (TextView) findViewById(R.id.opponentdisplayname);
-        mUserImage = (ImageView) findViewById(R.id.userimage);
+        mUserImage = (CircularImageView) findViewById(R.id.userimage);
         mUserDisplayName = (TextView) findViewById(R.id.userdisplayname);
 
         mGameOverMessage = (LinearLayout) findViewById(R.id.gameovermessage);
@@ -176,11 +185,6 @@ public class MultiPlayerActivity extends AppCompatActivity
 
     public void updateDisplay() {
         m_boardView.placeDisc(m_gameState.getLastMove(), m_gameState.getLastRow(), m_gameState.getLastPlayerToken());
-        /*
-        if(m_gameState.GoalTest()) {
-            Toast.makeText(getApplicationContext(), "Game over", Toast.LENGTH_SHORT).show();
-        }
-        */
     }
 
     @Override
@@ -462,19 +466,34 @@ public class MultiPlayerActivity extends AppCompatActivity
 
         if (isDoingTurn) {
             m_boardView.setCanMove(true);
+            mOpponentDisplayName.setAlpha(0.5f);
+            mUserDisplayName.setAlpha(1f);
         } else {
             m_boardView.setCanMove(false);
+            mOpponentDisplayName.setAlpha(1f);
+            mUserDisplayName.setAlpha(0.5f);
         }
 
         if(isIngame) {
             findViewById(R.id.matchup_layout).setVisibility(View.GONE);
             findViewById(R.id.gameplay_layout).setVisibility(View.VISIBLE);
 
-            imageManager.loadImage(mUserImage, mUser.getIconImageUri());
+            mUserImage.setBorderColor(mUserColor);
+            mOpponentImage.setBorderColor((mUserColor == getResources().getColor(R.color.player1)) ? getResources().getColor(R.color.player2) : getResources().getColor(R.color.player1));
+
+            if(mUser.getIconImageUrl() != null) {
+                loadWebImage(mUserImage, mUser.getIconImageUrl());
+            } else {
+                mUserImage.setImageResource(R.drawable.anon);
+            }
             mUserDisplayName.setText(mUser.getDisplayName());
 
             if (mOpponent != null) {
-                imageManager.loadImage(mOpponentImage, mOpponent.getIconImageUri());
+                if(mOpponent.getIconImageUrl() != null) {
+                    loadWebImage(mOpponentImage, mOpponent.getIconImageUrl());
+                } else {
+                    mOpponentImage.setImageResource(R.drawable.anon);
+                }
                 mOpponentDisplayName.setText(mOpponent.getDisplayName());
             }
         } else {
@@ -486,6 +505,7 @@ public class MultiPlayerActivity extends AppCompatActivity
     // Switch to gameplay view.
     public void setGameplayUI() {
         isDoingTurn = true;
+        mUserColor = (m_gameState.getLastPlayerToken() == 'r') ? getResources().getColor(R.color.player2) : getResources().getColor(R.color.player1);
         setViewVisibility();
     }
 
@@ -727,6 +747,7 @@ public class MultiPlayerActivity extends AppCompatActivity
                     }
                 }
                 m_boardView.setupBoard(m_gameState.toString());
+                mUserColor = (m_gameState.getLastPlayerToken() == 'r') ? getResources().getColor(R.color.player1) : getResources().getColor(R.color.player2);
                 setViewVisibility();
                 // Display warning about waiting until its your turn?
                 //showWarning("Alas...", "It's not your turn.");
@@ -848,5 +869,21 @@ public class MultiPlayerActivity extends AppCompatActivity
         }
 
         return false;
+    }
+
+    private void loadWebImage(final CircularImageView imageView, final String imageUrl) {
+        Ion.with(this).load(imageUrl).asBitmap().setCallback(new FutureCallback<Bitmap>() {
+            @Override
+            public void onCompleted(Exception e, Bitmap result) {
+                if(e == null) {
+                    // Success
+                    imageView.setImageBitmap(result);
+                }
+                else {
+                    // Error
+                    imageView.setImageResource(R.drawable.anon);
+                }
+            }
+        });
     }
 }

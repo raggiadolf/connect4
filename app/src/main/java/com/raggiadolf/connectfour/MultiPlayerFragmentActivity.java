@@ -151,6 +151,7 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
                 mGameOverMessage.setBackgroundColor((m_gameState.getLastPlayerToken() == 'R') ? getResources().getColor(R.color.player1) : getResources().getColor(R.color.player2));
                 mGameOverMessage.startAnimation(mAnimSlideIn);
                 mGameOverMessage.setVisibility(View.VISIBLE);
+                mGameOverMessage.bringToFront();
 
                 ParticipantResult myRes = new ParticipantResult(m_match.getParticipantId(Games.Players.getCurrentPlayerId(m_googleApiClient)), ParticipantResult.MATCH_RESULT_WIN, ParticipantResult.PLACING_UNINITIALIZED);
                 ParticipantResult oppoRes = new ParticipantResult(getNextParticipantId(), ParticipantResult.MATCH_RESULT_LOSS, ParticipantResult.PLACING_UNINITIALIZED);
@@ -548,6 +549,8 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
 
     public void rematch(View view) {
         mGameOverMessage.setVisibility(View.GONE);
+        MultiPlayerFragmentActivityFragment fragment = (MultiPlayerFragmentActivityFragment) getFragmentManager().findFragmentByTag("gameplayfragment");
+        getFragmentManager().beginTransaction().remove(fragment).add(R.id.gameplayfragment, fragment).commit();
         rematch();
     }
 
@@ -561,8 +564,7 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
     public void rematch() {
         showSpinner();
         if(!m_match.canRematch()) {
-            Log.d(TAG, "Can't rematch.");
-            return;
+            Log.d(TAG, "Can't rematch.. Shouldn't really be rematching.. still is?");
         }
         Games.TurnBasedMultiplayer.rematch(m_googleApiClient, m_match.getMatchId()).setResultCallback(
                 new ResultCallback<TurnBasedMultiplayer.InitiateMatchResult>() {
@@ -643,6 +645,7 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
                 mGameOverMessage.setBackgroundColor((m_gameState.getLastPlayerToken() == 'W') ? getResources().getColor(R.color.player1) : getResources().getColor(R.color.player2));
                 mGameOverMessage.startAnimation(mAnimSlideIn);
                 mGameOverMessage.setVisibility(View.VISIBLE);
+                mGameOverMessage.bringToFront();
 
                 Games.TurnBasedMultiplayer.finishMatch(m_googleApiClient, m_match.getMatchId())
                         .setResultCallback(new ResultCallback<TurnBasedMultiplayer.UpdateMatchResult>() {

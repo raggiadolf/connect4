@@ -7,8 +7,6 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
 import android.support.annotation.NonNull;
 import android.util.AttributeSet;
@@ -29,7 +27,7 @@ public class BoardView extends View {
 
     private boolean m_canMove = true;
 
-    private char[][] m_board = new char[6][7];
+    public char[][] m_board = new char[6][7];
     private char[][] m_drawingBoard;
 
     private Paint m_discPaint = new Paint();
@@ -72,6 +70,14 @@ public class BoardView extends View {
         invalidate();
     }
 
+    public void resetBoard() {
+        for(int row = 0, index = 0; row < 6; row++) {
+            for(int col = 0; col < 7; col++, index++) {
+                m_board[row][col] = 0;
+            }
+        }
+    }
+
     ValueAnimator animator = new ValueAnimator();
     private void dropDisc(final int col, final int row, final char token, final double endcoord) {
         animator.removeAllUpdateListeners();
@@ -105,17 +111,17 @@ public class BoardView extends View {
         m_fallingDisc.inset((int) (m_fallingDisc.width() * 0.1), (int) (m_fallingDisc.height() * 0.1));
 
         switch(token) {
-            case 'r':
+            case 'R':
                 m_fallingDiscPaint.setColor(m_player1Color);
                 break;
-            case 'w':
+            case 'W':
                 m_fallingDiscPaint.setColor(m_player2Color);
                 break;
         }
 
         double endcoord = (getMeasuredHeight() - m_discHeight * 0.1) - col * m_cellHeight;
         dropDisc(col, row, token, endcoord);
-    }
+}
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
@@ -149,12 +155,12 @@ public class BoardView extends View {
 
         for(int row = 0; row < 7; row++) {
             for(int col = 0; col < 6; col++) {
-                switch(m_drawingBoard[row][col]) {
-                    case 'r':
+                switch (m_drawingBoard[row][col]) {
+                    case 'R':
                         m_discPaint.setColor(m_player1Color);
                         canvas.drawOval(m_boardDiscs.get(row).get(col), m_discPaint);
                         break;
-                    case 'w':
+                    case 'W':
                         m_discPaint.setColor(m_player2Color);
                         canvas.drawOval(m_boardDiscs.get(row).get(col), m_discPaint);
                         break;

@@ -122,12 +122,11 @@
 
         </LinearLayout>
 
-        <com.raggiadolf.connectfour.BoardView
-            android:id="@+id/boardview"
+        <FrameLayout
+            android:id="@+id/gameplayfragment"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/shape"
-        />
+            />
 
     </LinearLayout>
 

@@ -113,4 +113,14 @@ public class ConnectFourState {
 
         return retVal;
     }
+
+    @Override
+    public String toString() {
+        return "ConnectFourState{" +
+                "turnState='" + turnState + '\'' +
+                ", lastRow=" + lastRow +
+                ", lastCol=" + lastCol +
+                ", lastPlayer='" + lastPlayer + '\'' +
+                '}';
+    }
 }

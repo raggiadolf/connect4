@@ -6,8 +6,8 @@ public class State {
 
     private char[][] grid;
     private String player;
-    private int lastCol;
-    private int lastRow;
+    private Integer lastCol;
+    private Integer lastRow;
 
     private static int[][] evaluationTable = {{3, 4,  5,  7,  5, 4, 3},
                                               {4, 6,  8, 10,  8, 6, 4},
@@ -24,8 +24,8 @@ public class State {
                                  {0, 0, 0, 0, 0, 0, 0},
                                  {0, 0, 0, 0, 0, 0, 0}};
         this.player = "RED";
-        this.lastCol = 1;
-        this.lastRow = 1;
+        this.lastCol = null;
+        this.lastRow = null;
     }
 
     public State(String player, char[][] grid, int row, int col) {
@@ -44,10 +44,7 @@ public class State {
 
         for(int gridRow = 0, index = 0; gridRow < 6; gridRow++) {
             for(int gridCol = 0; gridCol < 7; gridCol++, index++) {
-                if(grid.charAt(index) == '0')
-                    this.grid[gridRow][gridCol] = 0;
-                else
-                    this.grid[gridRow][gridCol] = grid.charAt(index);
+                this.grid[gridRow][gridCol] = grid.charAt(index);
             }
         }
     }
@@ -65,16 +62,16 @@ public class State {
      * grid is 0 indexed.
      * @return The move that led to the current state.
      */
-    public int getLastMove() {
+    public Integer getLastMove() {
         return this.lastCol;
     }
 
-    public int getLastRow() {
+    public Integer getLastRow() {
         return this.lastRow;
     }
 
     public char getLastPlayerToken() {
-        return Character.toLowerCase(this.player.charAt(0));
+        return this.player.charAt(0);
     }
 
     public String getPlayer() {
@@ -883,13 +880,13 @@ public class State {
         StringBuilder sb = new StringBuilder();
         for(char[] row : grid) {
             for(char token : row) {
-                char ch = '0';
-                switch(Character.toLowerCase(token)) {
-                    case 'w':
-                        ch = 'w';
+                char ch = 0;
+                switch(token) {
+                    case 'W':
+                        ch = 'W';
                         break;
-                    case 'r':
-                        ch = 'r';
+                    case 'R':
+                        ch = 'R';
                         break;
                 }
                 sb.append(ch);

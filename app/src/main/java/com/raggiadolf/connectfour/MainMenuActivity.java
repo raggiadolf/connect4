@@ -11,7 +11,6 @@ import org.honorato.multistatetogglebutton.MultiStateToggleButton;
 
 public class MainMenuActivity extends AppCompatActivity {
     MultiStateToggleButton m_difficultySelector;
-    Difficulty m_difficulty;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,7 +64,7 @@ public class MainMenuActivity extends AppCompatActivity {
     }
 
     public void startMultiPlayer(View view) {
-        Intent intent = new Intent(this, MultiPlayerActivity.class);
+        Intent intent = new Intent(this, MultiPlayerFragmentActivity.class);
         startActivity(intent);
     }
 }

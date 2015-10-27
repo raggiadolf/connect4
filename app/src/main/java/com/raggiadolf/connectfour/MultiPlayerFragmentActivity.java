@@ -1,19 +1,24 @@
 package com.raggiadolf.connectfour;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.LinearLayout;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -296,25 +301,6 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
         startActivityForResult(intent, RC_SELECT_PLAYERS);
     }
 
-    // Create a one-on-one automatch game.
-    public void onQuickMatchClicked(View view) {
-        Bundle autoMatchCriteria = RoomConfig.createAutoMatchCriteria(1, 1, 0);
-
-        TurnBasedMatchConfig tbmc = TurnBasedMatchConfig.builder()
-                .setAutoMatchCriteria(autoMatchCriteria).build();
-
-        showSpinner();
-
-        // Start the match
-        ResultCallback<TurnBasedMultiplayer.InitiateMatchResult> cb = new ResultCallback<TurnBasedMultiplayer.InitiateMatchResult>() {
-            @Override
-            public void onResult(TurnBasedMultiplayer.InitiateMatchResult initiateMatchResult) {
-                processResult(initiateMatchResult);
-            }
-        };
-        Games.TurnBasedMultiplayer.createMatch(m_googleApiClient, tbmc).setResultCallback(cb);
-    }
-
     @Override
     protected void onActivityResult(int requestCode, int responseCode, Intent intent) {
         if(requestCode == RC_SIGN_IN) {
@@ -342,7 +328,6 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
                 mTurnData = null;
                 isIngame = true;
 
-                //mGameplayFragment = new MultiPlayerFragmentActivityFragment();
                 getFragmentManager().beginTransaction()
                         .add(R.id.gameplayfragment, new MultiPlayerFragmentActivityFragment(), "gameplayfragment")
                         .commit();
@@ -421,11 +406,6 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
             findViewById(R.id.matchup_layout).setVisibility(View.GONE);
             findViewById(R.id.gameplay_layout).setVisibility(View.VISIBLE);
 
-//            FragmentManager fragmentManager = getFragmentManager();
-//            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-//            fragmentTransaction.add(R.id.gameplayfragment, mGameplayFragment);
-//            fragmentTransaction.commit();
-
             MultiPlayerFragmentActivityFragment fragment = (MultiPlayerFragmentActivityFragment) getFragmentManager().findFragmentByTag("gameplayfragment");
             if (isDoingTurn) {
                 fragment.setCanMove(true);
@@ -485,8 +465,28 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
 
     @Override
     public void onInvitationReceived(Invitation invitation) {
-        Toast.makeText(this, "An invitation has arrived from " + invitation.getInviter().getDisplayName(), Toast.LENGTH_SHORT)
-                .show();
+
+        LayoutInflater layoutInflater = (LayoutInflater) getBaseContext().getSystemService(LAYOUT_INFLATER_SERVICE);
+        View popupView = layoutInflater.inflate(R.layout.game_invitation_popup, null);
+        TextView popupText = (TextView) popupView.findViewById(R.id.popuptext);
+        popupText.setText("An invitation has arrived from " + invitation.getInviter().getDisplayName() + ". Click here to view match.");
+        final PopupWindow popupWindow = new PopupWindow(
+                popupView,
+                ActionBar.LayoutParams.WRAP_CONTENT,
+                ActionBar.LayoutParams.WRAP_CONTENT
+        );
+
+        popupWindow.setAnimationStyle(R.style.PopupAnimation);
+        if(!isFinishing()) {
+            popupWindow.showAtLocation(popupView, Gravity.BOTTOM, 0, 100);
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    popupWindow.dismiss();
+                }
+            }, 5000);
+        }
+
     }
 
     @Override

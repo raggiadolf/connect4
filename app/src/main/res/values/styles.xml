@@ -75,4 +75,9 @@
         <item name="android:padding">12dp</item>
         <item name="android:fontFamily">sans-serif</item>
     </style>
+
+    <style name="PopupAnimation">
+        <item name="android:windowEnterAnimation">@anim/popup_show</item>
+        <item name="android:windowExitAnimation">@anim/popup_hide</item>
+    </style>
 </resources>

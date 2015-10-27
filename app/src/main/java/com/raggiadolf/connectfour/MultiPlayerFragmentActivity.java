@@ -289,6 +289,7 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
     // Displays your inbox. You will get back onActivityResult where
     // you will need to figure out what you clicked on.
     public void onCheckGamesClicked(View view) {
+        mGameOverMessage.setVisibility(View.GONE);
         Intent intent = Games.TurnBasedMultiplayer.getInboxIntent(m_googleApiClient);
         startActivityForResult(intent, RC_LOOK_AT_MATCHES);
     }

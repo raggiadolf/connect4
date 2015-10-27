@@ -9,8 +9,9 @@
         android:id="@+id/difficulty_selector"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dip"
-        android:entries="@array/difficulty_array" />
+        android:entries="@array/difficulty_array"
+        android:layout_centerHorizontal="true"
+        android:layout_above="@+id/linearLayout" />
 
     <TextView
         android:layout_width="wrap_content"

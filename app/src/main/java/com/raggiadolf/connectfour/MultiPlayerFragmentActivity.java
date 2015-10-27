@@ -2,13 +2,10 @@ package com.raggiadolf.connectfour;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.support.v4.app.FragmentActivity;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -76,7 +73,6 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
     private TextView mOpponentDisplayName;
     private CircularImageView mUserImage;
     private TextView mUserDisplayName;
-
     private LinearLayout mGameOverMessage;
     private TextView mGameOverText;
     private Animation mAnimSlideIn;
@@ -85,7 +81,6 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
 
     // Should I be showing to turn API?
     public boolean isDoingTurn = false;
-
     public boolean isIngame = false;
 
     // This is the current match we're in; null if not loaded
@@ -96,11 +91,10 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
     // taken an action on the match, such as takeTurn()
     public ConnectFourState mTurnData;
 
+    // Used to show display pics and username for players
     private Participant mOpponent = null;
     private Participant mUser = null;
     private Integer mUserColor = null;
-
-    //MultiPlayerFragmentActivityFragment mGameplayFragment = new MultiPlayerFragmentActivityFragment();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

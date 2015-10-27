@@ -4,8 +4,8 @@
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
     <string name="title_activity_single_player">SinglePlayerActivity</string>
-    <string name="playSinglePlayerGame">Play SinglePlayer Game</string>
-    <string name="playMultiPlayerGame">Play MultiPlayer Game</string>
+    <string name="playSinglePlayerGame">SinglePlayer</string>
+    <string name="playMultiPlayerGame">MultiPlayer</string>
     <string name="title_activity_multi_player">MultiPlayerActivity</string>
     <string name="signing_in">Signing in with Google</string>
     <string name="signing_out">Signing out</string>
@@ -27,6 +27,8 @@
     <string name="user_profile">User profile picture</string>
     <string name="rematch">Rematch</string>
     <string name="quit">Quit</string>
+    <string name="singleplayertip">Play a game against an AI opponent.</string>
+    <string name="multiplayertip">Play a game against a friend through Google plus.</string>
 
     <string-array name="difficulty_array">
         <item>easy</item>

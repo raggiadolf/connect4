@@ -12,22 +12,49 @@
         android:layout_marginTop="10dip"
         android:entries="@array/difficulty_array" />
 
-    <Button
-        android:id="@+id/playSinglePlayerGame"
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="startSinglePlayer"
-        android:text="@string/playSinglePlayerGame"
-        android:layout_above="@+id/playMultiPlayerGame"
-        android:layout_alignStart="@+id/playMultiPlayerGame" />
-
-    <Button
-        android:id="@+id/playMultiPlayerGame"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:onClick="startMultiPlayer"
-        android:text="@string/playMultiPlayerGame"
-        android:layout_centerVertical="true"
+        android:text="@string/singleplayertip"
+        android:id="@+id/textView"
+        android:layout_marginTop="56dp"
+        android:layout_alignTop="@+id/linearLayout"
         android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/multiplayertip"
+        android:id="@+id/textView2"
+        android:gravity="center"
+        android:layout_below="@+id/linearLayout"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_centerInParent="true"
+        android:id="@+id/linearLayout">
+
+        <Button
+            android:id="@+id/playSinglePlayerGame"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:onClick="startSinglePlayer"
+            android:text="@string/playSinglePlayerGame"
+            android:layout_marginBottom="40dp"/>
+
+        <Button
+            android:id="@+id/playMultiPlayerGame"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:onClick="startMultiPlayer"
+            android:text="@string/playMultiPlayerGame"
+            android:layout_marginTop="40dp"/>
+
+
+    </LinearLayout>
 
 </RelativeLayout>

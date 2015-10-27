@@ -5,4 +5,7 @@
     <color name="player2">#e6c520</color>
     <color name="blankSquare">#303030</color>
     <color name="userDisplayBackground">#ebf5f5</color>
+
+    <color name="button_primary_color">#ffffff</color>
+    <color name="button_secondary_color">#5a595b</color>
 </resources>

@@ -3,12 +3,25 @@
     <item
         android:state_pressed="true"
         android:state_enabled="true"
-        android:drawable="@drawable/button_pressed" />
+
+        android:layout_width="100dp"
+        android:layout_height="60dp"
+        android:background="@drawable/buttonshape"
+        android:shadowColor="#A8A8A8"
+        android:shadowDx="0"
+        android:shadowDy="0"
+        android:shadowRadius="5" />
     <item
         android:state_focused="true"
         android:state_enabled="true"
-        android:drawable="@drawable/button_focused" />
+        />
     <item
         android:state_enabled="true"
-        android:drawable="@drawable/button_default" />
+        android:layout_width="100dp"
+        android:layout_height="60dp"
+        android:background="@drawable/buttonshape"
+        android:shadowColor="#A8A8A8"
+        android:shadowDx="0"
+        android:shadowDy="0"
+        android:shadowRadius="5" />
 </selector>

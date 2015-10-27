@@ -18,6 +18,7 @@ import android.widget.Toast;
 import com.raggiadolf.connectfour.gameplayingagent.*;
 
 import java.util.List;
+import java.util.Random;
 
 public class SinglePlayerActivity extends AppCompatActivity {
 
@@ -119,6 +120,11 @@ public class SinglePlayerActivity extends AppCompatActivity {
     }
 
     public void backToMainMenu(View view) {
+        onBackPressed();
+    }
+
+    @Override
+    public void onBackPressed() {
         Intent intent = new Intent(this, MainMenuActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
@@ -127,6 +133,11 @@ public class SinglePlayerActivity extends AppCompatActivity {
     private class AlphaBetaSearchTask extends AsyncTask<State, Integer, Integer> {
         @Override
         protected Integer doInBackground(State... params) {
+            try {
+                Thread.sleep(500);
+            } catch(InterruptedException ex) {
+                // Do nothing..
+            }
             State searchState = new State(params[0]);
             AlphaBetaSearch abs = new AlphaBetaSearch(playclock);
             Node nextMove = new Node();
@@ -134,7 +145,15 @@ public class SinglePlayerActivity extends AppCompatActivity {
                 for(int i = 2; i < 42; i++) {
                     switch(diff) {
                         case easy:
-                            nextMove = abs.AlphaBetaEasy(i, searchState, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1);
+                            if(i == 2) {
+                                Random rand = new Random(System.currentTimeMillis()); // Naive seed
+                                if(rand.nextDouble() > 0.75) {
+                                    int min = 0;
+                                    int max = searchState.LegalMoves().size() - 1;
+                                    nextMove.setMove(rand.nextInt((max - min) + 1) + min);
+                                }
+                            }
+                            nextMove = abs.AlphaBetaMedium(i, searchState, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1);
                             break;
                         case medium:
                             nextMove = abs.AlphaBetaMedium(i, searchState, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1);
@@ -143,7 +162,15 @@ public class SinglePlayerActivity extends AppCompatActivity {
                             nextMove = abs.AlphaBetaHard(i, searchState, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1);
                             break;
                         default:
-                            nextMove = abs.AlphaBetaEasy(i, searchState, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1);
+                            if(i == 2) {
+                                Random rand = new Random(System.currentTimeMillis()); // Naive seed
+                                if(rand.nextDouble() > 0.75) {
+                                    int min = 0;
+                                    int max = searchState.LegalMoves().size() - 1;
+                                    nextMove.setMove(rand.nextInt((max - min) + 1) + min);
+                                }
+                            }
+                            nextMove = abs.AlphaBetaMedium(i, searchState, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1);
                     }
                     publishProgress(i);
                 }

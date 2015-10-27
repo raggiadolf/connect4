@@ -81,7 +81,7 @@ public class BoardView extends View {
     ValueAnimator animator = new ValueAnimator();
     private void dropDisc(final int col, final int row, final char token, final double endcoord) {
         animator.removeAllUpdateListeners();
-        animator.setDuration(500);
+        animator.setDuration(300);
         animator.setFloatValues(0.0f, 1.0f);
         animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override

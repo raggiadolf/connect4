@@ -60,6 +60,7 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
     final static int RC_SELECT_PLAYERS  = 10000;
     final static int RC_LOOK_AT_MATCHES = 10001;
     final static int RC_REQUEST_ACHIEVEMENTS = 10002;
+    final static int RC_LEADERBOARD = 10003;
 
     // Client used to interact with Google APIs
     private GoogleApiClient m_googleApiClient;
@@ -158,6 +159,7 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
                 Games.Achievements.unlock(m_googleApiClient, getResources().getString(R.string.TASTE_OF_BLOOD));
                 Games.Achievements.increment(m_googleApiClient, getResources().getString(R.string.UP_AND_COMER), 1);
                 Games.Achievements.increment(m_googleApiClient, getResources().getString(R.string.BEASTMODE), 1);
+                Games.Leaderboards.submitScore(m_googleApiClient, getResources().getString(R.string.LEADERBOARD), 1);
 
                 ParticipantResult myRes = new ParticipantResult(m_match.getParticipantId(Games.Players.getCurrentPlayerId(m_googleApiClient)), ParticipantResult.MATCH_RESULT_WIN, ParticipantResult.PLACING_UNINITIALIZED);
                 ParticipantResult oppoRes = new ParticipantResult(getNextParticipantId(), ParticipantResult.MATCH_RESULT_LOSS, ParticipantResult.PLACING_UNINITIALIZED);
@@ -310,8 +312,11 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
     }
 
     public void onCheckAchievementsClicked(View view) {
-
         startActivityForResult(Games.Achievements.getAchievementsIntent(m_googleApiClient), RC_REQUEST_ACHIEVEMENTS);
+    }
+
+    public void onLeaderboardClicked(View view) {
+        startActivityForResult(Games.Leaderboards.getLeaderboardIntent(m_googleApiClient, getResources().getString(R.string.LEADERBOARD)), RC_LEADERBOARD);
     }
 
     @Override

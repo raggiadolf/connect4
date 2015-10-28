@@ -24,6 +24,7 @@
     <string name="start_match">Start Match</string>
     <string name="quick_match">Quick match</string>
     <string name="achievements">Achievements</string>
+    <string name="leaderboard">Leaderboard</string>
     <string name="oppo_profile">Opponent profile picture</string>
     <string name="user_profile">User profile picture</string>
     <string name="rematch">Rematch</string>
@@ -49,4 +50,7 @@
     <string name="CHALLENGE_ACCEPTED">CgkIr-vQv_saEAIQBg</string>
     <string name="UP_AND_COMER">CgkIr-vQv_saEAIQBw</string>
     <string name="BEASTMODE">CgkIr-vQv_saEAIQCA</string>
+
+    <!-- Leaderboard -->
+    <string name="LEADERBOARD">CgkIr-vQv_saEAIQCQ</string>
 </resources>

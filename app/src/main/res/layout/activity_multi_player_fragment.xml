@@ -222,6 +222,13 @@
                 android:text="@string/check_games" />
 
             <Button
+                android:id="@+id/checkAchievements"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:onClick="onCheckAchievementsClicked"
+                android:text="@string/achievements" />
+
+            <Button
                 android:id="@+id/sign_out_button"
                 android:layout_width="200dp"
                 android:layout_height="wrap_content"

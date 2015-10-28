@@ -23,6 +23,7 @@
     <string name="check_games">Check games</string>
     <string name="start_match">Start Match</string>
     <string name="quick_match">Quick match</string>
+    <string name="achievements">Achievements</string>
     <string name="oppo_profile">Opponent profile picture</string>
     <string name="user_profile">User profile picture</string>
     <string name="rematch">Rematch</string>
@@ -39,4 +40,13 @@
 <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="title_activity_multi_player_fragment">MultiPlayerFragmentActivity</string>
+
+    <!-- Achievements -->
+    <string name="JOURNEY_STARTED">CgkIr-vQv_saEAIQAQ</string>
+    <string name="TASTE_OF_BLOOD">CgkIr-vQv_saEAIQAw</string>
+    <string name="WINSOME_LOSESOME">CgkIr-vQv_saEAIQBA</string>
+    <string name="CHALLENGER_APPEARED">CgkIr-vQv_saEAIQBQ</string>
+    <string name="CHALLENGE_ACCEPTED">CgkIr-vQv_saEAIQBg</string>
+    <string name="UP_AND_COMER">CgkIr-vQv_saEAIQBw</string>
+    <string name="BEASTMODE">CgkIr-vQv_saEAIQCA</string>
 </resources>

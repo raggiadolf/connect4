@@ -59,6 +59,7 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
     private static final int RC_SIGN_IN = 9001;
     final static int RC_SELECT_PLAYERS  = 10000;
     final static int RC_LOOK_AT_MATCHES = 10001;
+    final static int RC_REQUEST_ACHIEVEMENTS = 10002;
 
     // Client used to interact with Google APIs
     private GoogleApiClient m_googleApiClient;
@@ -100,6 +101,8 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
     private Participant mOpponent = null;
     private Participant mUser = null;
     private Integer mUserColor = null;
+
+    private boolean mStartedMatch = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -151,6 +154,10 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
                 mGameOverMessage.startAnimation(mAnimSlideIn);
                 mGameOverMessage.setVisibility(View.VISIBLE);
                 mGameOverMessage.bringToFront();
+
+                Games.Achievements.unlock(m_googleApiClient, getResources().getString(R.string.TASTE_OF_BLOOD));
+                Games.Achievements.increment(m_googleApiClient, getResources().getString(R.string.UP_AND_COMER), 1);
+                Games.Achievements.increment(m_googleApiClient, getResources().getString(R.string.BEASTMODE), 1);
 
                 ParticipantResult myRes = new ParticipantResult(m_match.getParticipantId(Games.Players.getCurrentPlayerId(m_googleApiClient)), ParticipantResult.MATCH_RESULT_WIN, ParticipantResult.PLACING_UNINITIALIZED);
                 ParticipantResult oppoRes = new ParticipantResult(getNextParticipantId(), ParticipantResult.MATCH_RESULT_LOSS, ParticipantResult.PLACING_UNINITIALIZED);
@@ -302,6 +309,11 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
         startActivityForResult(intent, RC_SELECT_PLAYERS);
     }
 
+    public void onCheckAchievementsClicked(View view) {
+
+        startActivityForResult(Games.Achievements.getAchievementsIntent(m_googleApiClient), RC_REQUEST_ACHIEVEMENTS);
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int responseCode, Intent intent) {
         if(requestCode == RC_SIGN_IN) {
@@ -334,6 +346,8 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
                         .commit();
 
                 getFragmentManager().executePendingTransactions();
+
+                Games.Achievements.unlock(m_googleApiClient, getResources().getString(R.string.CHALLENGE_ACCEPTED));
 
                 updateMatch(match);
             }
@@ -369,6 +383,8 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
                     .build();
 
             // Create and start the match.
+            mStartedMatch = true;
+
             Games.TurnBasedMultiplayer
                     .createMatch(m_googleApiClient, tbmc)
                     .setResultCallback(new ResultCallback<TurnBasedMultiplayer.InitiateMatchResult>() {
@@ -487,6 +503,8 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
                 }
             }, 5000);
         }
+
+        Games.Achievements.unlock(m_googleApiClient, getResources().getString(R.string.CHALLENGER_APPEARED));
 
     }
 
@@ -642,6 +660,8 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
                 mGameOverMessage.setVisibility(View.VISIBLE);
                 mGameOverMessage.bringToFront();
 
+                Games.Achievements.unlock(m_googleApiClient, getResources().getString(R.string.WINSOME_LOSESOME));
+
                 Games.TurnBasedMultiplayer.finishMatch(m_googleApiClient, m_match.getMatchId())
                         .setResultCallback(new ResultCallback<TurnBasedMultiplayer.UpdateMatchResult>() {
                             @Override
@@ -758,6 +778,10 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
     public void processResult(TurnBasedMultiplayer.UpdateMatchResult result) {
         TurnBasedMatch match = result.getMatch();
         dismissSpinner();
+
+        if(mStartedMatch) {
+            Games.Achievements.unlock(m_googleApiClient, getResources().getString(R.string.JOURNEY_STARTED));
+        }
 
         isDoingTurn = (match.getTurnStatus() == TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN);
 

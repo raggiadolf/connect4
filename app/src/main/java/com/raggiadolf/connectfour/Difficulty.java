@@ -1,7 +1,7 @@
 package com.raggiadolf.connectfour;
 
 /**
- * Created by ragnaradolf on 16/10/15.
+ * Represents the selected difficulty for the Single Player game.
  */
 public enum Difficulty {
     easy, medium, hard

@@ -57,10 +57,10 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
 
     // For our intents
     private static final int RC_SIGN_IN = 9001;
-    final static int RC_SELECT_PLAYERS  = 10000;
-    final static int RC_LOOK_AT_MATCHES = 10001;
-    final static int RC_REQUEST_ACHIEVEMENTS = 10002;
-    final static int RC_LEADERBOARD = 10003;
+    private static final int RC_SELECT_PLAYERS  = 10000;
+    private static final int RC_LOOK_AT_MATCHES = 10001;
+    private static final int RC_REQUEST_ACHIEVEMENTS = 10002;
+    private static final int RC_LEADERBOARD = 10003;
 
     // Client used to interact with Google APIs
     private GoogleApiClient m_googleApiClient;
@@ -103,6 +103,8 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
     private Participant mUser = null;
     private Integer mUserColor = null;
 
+    // Simply used to catch an achievement and avoid
+    // displaying it just before we start a fragment
     private boolean mStartedMatch = false;
 
     @Override
@@ -134,6 +136,10 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
 
     }
 
+    /**
+     * The event handler for our game play fragment
+     * @param action the action that was just made on the board(column placed into)
+     */
     @Override
     public void onMove(int action) {
         List<Integer> legalMoves = m_gameState.LegalMoves();
@@ -149,24 +155,29 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
             mTurnData.setLastPlayer(m_gameState.getPlayer());
             mTurnData.setTurnState(m_gameState.toString());
 
-            if (m_gameState.GoalTest()) {
+            // TODO: If draw?
+
+            if (m_gameState.GoalTest()) { // The player just won
                 mGameOverText.setText("You won!");
                 mGameOverMessage.setBackgroundColor((m_gameState.getLastPlayerToken() == 'R') ? getResources().getColor(R.color.player1) : getResources().getColor(R.color.player2));
                 mGameOverMessage.startAnimation(mAnimSlideIn);
                 mGameOverMessage.setVisibility(View.VISIBLE);
                 mGameOverMessage.bringToFront();
 
+                // Register achievements
                 Games.Achievements.unlock(m_googleApiClient, getResources().getString(R.string.TASTE_OF_BLOOD));
                 Games.Achievements.increment(m_googleApiClient, getResources().getString(R.string.UP_AND_COMER), 1);
                 Games.Achievements.increment(m_googleApiClient, getResources().getString(R.string.BEASTMODE), 1);
                 Games.Leaderboards.submitScore(m_googleApiClient, getResources().getString(R.string.LEADERBOARD), 1);
 
+                // Setup the finish match results
                 ParticipantResult myRes = new ParticipantResult(m_match.getParticipantId(Games.Players.getCurrentPlayerId(m_googleApiClient)), ParticipantResult.MATCH_RESULT_WIN, ParticipantResult.PLACING_UNINITIALIZED);
                 ParticipantResult oppoRes = new ParticipantResult(getNextParticipantId(), ParticipantResult.MATCH_RESULT_LOSS, ParticipantResult.PLACING_UNINITIALIZED);
                 List<ParticipantResult> results = new ArrayList<>();
                 results.add(myRes);
                 results.add(oppoRes);
 
+                // Call finish match to notify the participants of the results
                 Games.TurnBasedMultiplayer.finishMatch(m_googleApiClient, m_match.getMatchId(),
                         mTurnData.persist(), results)
                         .setResultCallback(new ResultCallback<TurnBasedMultiplayer.UpdateMatchResult>() {
@@ -175,7 +186,7 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
                                 processResult(result);
                             }
                         });
-            } else {
+            } else { // Take the turn the player just made
                 Games.TurnBasedMultiplayer.takeTurn(m_googleApiClient, m_match.getMatchId(),
                         mTurnData.persist(), nextParticipantId).setResultCallback(
                         new ResultCallback<TurnBasedMultiplayer.UpdateMatchResult>() {
@@ -212,6 +223,9 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * Updates the display by placing a disc(which starts the dropped disc animation)
+     */
     public void updateDisplay() {
         if(m_gameState.getLastMove() != null) {
             MultiPlayerFragmentActivityFragment fragment = (MultiPlayerFragmentActivityFragment) getFragmentManager().findFragmentByTag("gameplayfragment");
@@ -226,6 +240,10 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
         m_googleApiClient.connect();
     }
 
+    /**
+     * Handles the signin/signout buttons
+     * @param view The button that was just clicked
+     */
     @Override
     public void onClick(View view) {
         switch(view.getId()) {
@@ -246,6 +264,10 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
         }
     }
 
+    /**
+     * Called when the client is connected.
+     * @param bundle
+     */
     @Override
     public void onConnected(Bundle bundle) {
         Log.d(TAG, "onConnected() called. Sign in successful!");
@@ -270,6 +292,10 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
         Games.TurnBasedMultiplayer.registerMatchUpdateListener(m_googleApiClient, this);
     }
 
+    /**
+     * Called if the clients connection is suspended, tries to reconnect
+     * @param i
+     */
     @Override
     public void onConnectionSuspended(int i) {
         Log.d(TAG, "onConnectionSuspended() called. Trying to reconnect");
@@ -277,6 +303,10 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
         setViewVisibility();
     }
 
+    /**
+     * Called when the connection failed
+     * @param connectionResult
+     */
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
         Log.d(TAG, "onConnectionFailed() called, result: " + connectionResult);
@@ -295,30 +325,52 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
         setViewVisibility();
     }
 
-    // Displays your inbox. You will get back onActivityResult where
-    // you will need to figure out what you clicked on.
+    /**
+     * Displayes the inbox, will get back onActivityResult where
+     * we figure out what we clicked on, using the RC_LOOK_AT_MATCHES constant.
+     * @param view
+     */
     public void onCheckGamesClicked(View view) {
         mGameOverMessage.setVisibility(View.GONE);
         Intent intent = Games.TurnBasedMultiplayer.getInboxIntent(m_googleApiClient);
         startActivityForResult(intent, RC_LOOK_AT_MATCHES);
     }
 
-    // Open the create-game UI. You will get back an onActivityResult
-    // and figure out what to do.
+    /**
+     * Opens the create-game UI, will get back an onActivityResult where
+     * we figure out what we clicked on, using the RC_SELECT_PLAYERS constant.
+     * @param view
+     */
     public void onStartMatchClicked(View view) {
         Intent intent = Games.TurnBasedMultiplayer.getSelectOpponentsIntent(m_googleApiClient,
                 1, 1, true);
         startActivityForResult(intent, RC_SELECT_PLAYERS);
     }
 
+    /**
+     * Opens up the defualt Achievements view
+     * @param view
+     */
     public void onCheckAchievementsClicked(View view) {
         startActivityForResult(Games.Achievements.getAchievementsIntent(m_googleApiClient), RC_REQUEST_ACHIEVEMENTS);
     }
 
+    /**
+     * Opens up the default Leaderboard view, we pass in the leaderboard ID declared in our value xml, since we only have
+     * the one leaderboard for out app.
+     * @param view
+     */
     public void onLeaderboardClicked(View view) {
         startActivityForResult(Games.Leaderboards.getLeaderboardIntent(m_googleApiClient, getResources().getString(R.string.LEADERBOARD)), RC_LEADERBOARD);
     }
 
+    /**
+     * Here we handle the player returning from the calls to Look at Matches or Select Players(Start Match)
+     * @param requestCode The code we passed to startActivityForResult()
+     * @param responseCode Specified by the second activity, RESULT_OK if the operation was successful
+     *                     or RESULT_CANCELED if the operation failed for some reason.
+     * @param intent carries the result data
+     */
     @Override
     protected void onActivityResult(int requestCode, int responseCode, Intent intent) {
         if(requestCode == RC_SIGN_IN) {
@@ -339,9 +391,10 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
                 return;
             }
 
+            // Fetch the match we just opened
             TurnBasedMatch match = intent.getParcelableExtra(Multiplayer.EXTRA_TURN_BASED_MATCH);
 
-            if (match != null) {
+            if (match != null) { // Start the new match
                 m_gameState = null;
                 mTurnData = null;
                 isIngame = true;
@@ -350,10 +403,16 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
                         .add(R.id.gameplayfragment, new MultiPlayerFragmentActivityFragment(), "gameplayfragment")
                         .commit();
 
+                // Force the fragment to be committed, commit was not committing fast enough
+                // resulting in a NPE when we were trying to set up the board.
                 getFragmentManager().executePendingTransactions();
 
+                // Unlock the achievement for the player for accepting an invitation to a match.
+                // This probably erroneously gives the player an achievement if he opens up a match he himself
+                // started earlier. Fix in a future DLC.
                 Games.Achievements.unlock(m_googleApiClient, getResources().getString(R.string.CHALLENGE_ACCEPTED));
 
+                // Update the match with the info from the TurnBasedMatch object.
                 updateMatch(match);
             }
         }
@@ -405,7 +464,7 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
     public void setViewVisibility() {
         boolean isSignedIn = (m_googleApiClient != null) && (m_googleApiClient.isConnected());
 
-        if(!isSignedIn) {
+        if(!isSignedIn) { // Setup the login layout of the user is not signed in
             findViewById(R.id.login_layout).setVisibility(View.VISIBLE);
             findViewById(R.id.sign_in_button).setVisibility(View.VISIBLE);
             findViewById(R.id.matchup_layout).setVisibility(View.GONE);
@@ -418,6 +477,7 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
         }
 
 
+        // Display the name of the currently signed in user
         ((TextView) findViewById(R.id.name_field)).setText(Games.Players.getCurrentPlayer(
                 m_googleApiClient).getDisplayName());
         findViewById(R.id.login_layout).setVisibility(View.GONE);
@@ -425,10 +485,13 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
 
         if(isIngame) {
 
+            // Hide the matchup layout and show the gameplay_layout
             findViewById(R.id.matchup_layout).setVisibility(View.GONE);
             findViewById(R.id.gameplay_layout).setVisibility(View.VISIBLE);
 
             MultiPlayerFragmentActivityFragment fragment = (MultiPlayerFragmentActivityFragment) getFragmentManager().findFragmentByTag("gameplayfragment");
+
+            // Bold the name of the user who's turn it is to move.
             if (isDoingTurn) {
                 fragment.setCanMove(true);
                 mOpponentDisplayName.setAlpha(0.5f);
@@ -442,6 +505,9 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
             mUserImage.setBorderColor(mUserColor);
             mOpponentImage.setBorderColor((mUserColor == getResources().getColor(R.color.player1)) ? getResources().getColor(R.color.player2) : getResources().getColor(R.color.player1));
 
+            // Here we use an asynctask to download the users display pictures and display them above the game playing board
+            // This should instead be done only once when the players of the game have been established. Doing it here repeatedly
+            // is silly, but a quick and dirty solution when quick and dirty solutions are needed.
             if(mUser.getIconImageUrl() != null) {
                 loadWebImage(mUserImage, mUser.getIconImageUrl());
             } else {
@@ -457,7 +523,7 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
                 }
                 mOpponentDisplayName.setText(mOpponent.getDisplayName());
             }
-        } else {
+        } else { // Hide the gameplay layout and show the matchup, destroy the fragment if needed.
             findViewById(R.id.matchup_layout).setVisibility(View.VISIBLE);
             findViewById(R.id.gameplay_layout).setVisibility(View.GONE);
 
@@ -485,9 +551,14 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
         findViewById(R.id.progressLayout).setVisibility(View.GONE);
     }
 
+    /**
+     * Called when the user receives an invitation for a match, we use it to fade in a clickable
+     * popup view informing the user of who invited him to a match.
+     * @param invitation
+     */
     @Override
     public void onInvitationReceived(Invitation invitation) {
-
+        // Set up the popup view
         LayoutInflater layoutInflater = (LayoutInflater) getBaseContext().getSystemService(LAYOUT_INFLATER_SERVICE);
         View popupView = layoutInflater.inflate(R.layout.game_invitation_popup, null);
         TextView popupText = (TextView) popupView.findViewById(R.id.popuptext);
@@ -499,8 +570,9 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
         );
 
         popupWindow.setAnimationStyle(R.style.PopupAnimation);
-        if(!isFinishing()) {
+        if(!isFinishing()) { // We don't want to show the layout of the activity is destroying itself.
             popupWindow.showAtLocation(popupView, Gravity.BOTTOM, 0, 100);
+            // Use a handler to hide the view after 5 seconds
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -509,6 +581,7 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
             }, 5000);
         }
 
+        // Give the user an achievement for getting an invitation to a match.
         Games.Achievements.unlock(m_googleApiClient, getResources().getString(R.string.CHALLENGER_APPEARED));
 
     }
@@ -518,6 +591,11 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
         Toast.makeText(this, "An invitation was removed.", Toast.LENGTH_SHORT).show();
     }
 
+    /**
+     * Called when a match the user is participating in is updated.
+     * We could possibly take advantage of this for push notifications?
+     * @param turnBasedMatch the match that was just updated.
+     */
     @Override
     public void onTurnBasedMatchReceived(TurnBasedMatch turnBasedMatch) {
         // Match updated, drop the disc into the new disc into the correct slot, update the state
@@ -534,7 +612,12 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
         Toast.makeText(this, "A match was removed.", Toast.LENGTH_SHORT).show();
     }
 
+    /**
+     * Start a turnbased multiplayer match
+     * @param match the match to start
+     */
     public void startMatch(TurnBasedMatch match) {
+        // Set up the gamestate and the Turn data.
         m_gameState = new State();
         mTurnData = new ConnectFourState();
         mTurnData.setLastCol(m_gameState.getLastMove());
@@ -542,18 +625,21 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
         mTurnData.setLastPlayer(m_gameState.getPlayer());
         mTurnData.setTurnState(m_gameState.toString());
         isIngame = true;
-        //mGameplayFragment = new MultiPlayerFragmentActivityFragment();
+
+        // Launch the gameplay fragment
         getFragmentManager().beginTransaction()
                 .add(R.id.gameplayfragment, new MultiPlayerFragmentActivityFragment(), "gameplayfragment")
                 .commit();
 
         m_match = match;
 
+        // Establish the player id's
         String playerId = Games.Players.getCurrentPlayerId(m_googleApiClient);
         String myParticipantId = m_match.getParticipantId(playerId);
 
         showSpinner();
 
+        // Take the first turn
         Games.TurnBasedMultiplayer.takeTurn(m_googleApiClient, m_match.getMatchId(),
                 null, myParticipantId).setResultCallback(
                 new ResultCallback<TurnBasedMultiplayer.UpdateMatchResult>() {
@@ -565,6 +651,11 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
         );
     }
 
+    /**
+     * The user requested a rematch from the endgame view, destroy the current fragment and
+     * call the rematch method which establishes a rematch between the current players.
+     * @param view
+     */
     public void rematch(View view) {
         mGameOverMessage.setVisibility(View.GONE);
         MultiPlayerFragmentActivityFragment fragment = (MultiPlayerFragmentActivityFragment) getFragmentManager().findFragmentByTag("gameplayfragment");
@@ -572,13 +663,19 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
         rematch();
     }
 
+    /**
+     * Destroys the current fragment, sending the user back to the multiplayer view.
+     * @param view
+     */
     public void backToMainMenu(View view) {
         mGameOverMessage.setVisibility(View.GONE);
         isIngame = false;
         setViewVisibility();
     }
 
-    // If you choose to rematch, then call it and wait for a response
+    /**
+     * Establish a rematch by calling match.rematch and resetting the match and turndata.
+     */
     public void rematch() {
         showSpinner();
         if(!m_match.canRematch()) {
@@ -632,9 +729,11 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
             return null;
         }
     }
-
-    // This is the main function that gets called when players choose a match
-    // from the inbox, or else create a match and want to start it.
+    /**
+     * The main function which is called when players choose a match
+     * from the inbox, or else create a match and want to start it.
+     * @param match the match that we are currently participating in
+     */
     public void updateMatch(TurnBasedMatch match) {
         m_match = match;
 
@@ -656,9 +755,10 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
                         "We're still waiting for an automatch partner.");
                 return;
             case TurnBasedMatch.MATCH_STATUS_COMPLETE:
-                if(turnStatus == TurnBasedMatch.MATCH_TURN_STATUS_COMPLETE) {
+                if(turnStatus == TurnBasedMatch.MATCH_TURN_STATUS_COMPLETE) { // We've already finished this match
                     return;
                 }
+                // TODO: Check for a draw
                 mGameOverText.setText("You lost.");
                 mGameOverMessage.setBackgroundColor((m_gameState.getLastPlayerToken() == 'W') ? getResources().getColor(R.color.player1) : getResources().getColor(R.color.player2));
                 mGameOverMessage.startAnimation(mAnimSlideIn);
@@ -667,6 +767,8 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
 
                 Games.Achievements.unlock(m_googleApiClient, getResources().getString(R.string.WINSOME_LOSESOME));
 
+                // Call finishMatch to acknowledge that we have registered our result
+                // and to complete the match.
                 Games.TurnBasedMultiplayer.finishMatch(m_googleApiClient, m_match.getMatchId())
                         .setResultCallback(new ResultCallback<TurnBasedMultiplayer.UpdateMatchResult>() {
                             @Override
@@ -723,8 +825,6 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
                 fragment.setupBoard(m_gameState.toString());
                 mUserColor = (m_gameState.getLastPlayerToken() == 'R') ? getResources().getColor(R.color.player1) : getResources().getColor(R.color.player2);
                 setViewVisibility();
-                // Display warning about waiting until its your turn?
-                //showWarning("Alas...", "It's not your turn.");
                 break;
 
 
@@ -738,19 +838,10 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
         setViewVisibility();
     }
 
-    private void processResult(TurnBasedMultiplayer.CancelMatchResult result) {
-        dismissSpinner();
-
-        if (!checkStatusCode(null, result.getStatus().getStatusCode())) {
-            return;
-        }
-
-        isDoingTurn = false;
-
-        showWarning("Match",
-                "This match is canceled.  All other players will have their game ended.");
-    }
-
+    /**
+     * Someone initated a match, start the match or update it, as applicable.
+     * @param result
+     */
     private void processResult(TurnBasedMultiplayer.InitiateMatchResult result) {
         TurnBasedMatch match = result.getMatch();
         dismissSpinner();
@@ -768,18 +859,10 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
         startMatch(match);
     }
 
-    private void processResult(TurnBasedMultiplayer.LeaveMatchResult result) {
-        TurnBasedMatch match = result.getMatch();
-        dismissSpinner();
-        if (!checkStatusCode(match, result.getStatus().getStatusCode())) {
-            return;
-        }
-        isDoingTurn = (match.getTurnStatus() == TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN);
-        showWarning("Left", "You've left this match.");
-        isIngame = false;
-    }
-
-
+    /**
+     * Update the match.
+     * @param result
+     */
     public void processResult(TurnBasedMultiplayer.UpdateMatchResult result) {
         TurnBasedMatch match = result.getMatch();
         dismissSpinner();
@@ -848,6 +931,13 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
         return false;
     }
 
+    /**
+     * Helper function to download the image for the user.
+     * Uses an async task to download the display pictuer, if it can't download it
+     * it assigns a default picture as the display pic.
+     * @param imageView
+     * @param imageUrl
+     */
     private void loadWebImage(final CircularImageView imageView, final String imageUrl) {
         Ion.with(this).load(imageUrl).asBitmap().setCallback(new FutureCallback<Bitmap>() {
             @Override
@@ -887,6 +977,9 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
         m_alertDialog.show();
     }
 
+    /**
+     * Catch the back button and send the player to the main menu.
+     */
     @Override
     public void onBackPressed() {
         if(isIngame) {

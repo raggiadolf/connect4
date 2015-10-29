@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ConnectFour</string>
+    <string name="app_name">Fjarki</string>
 
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
@@ -13,7 +13,7 @@
     <string name="you_are_signed_in">You are signed in with Google.</string>
     <string name="sign_out">Sign out</string>
     <string name="signin_other_error">There was an issue with sign in. Please try again later.</string>
-    <string name="welcome_message">Welcome to Connect Four Multiplayer! Please sign in to Google to start playing.</string>
+    <string name="welcome_message">Welcome to Fjarki Multiplayer! Please sign in to Google to start playing.</string>
     <string name="match_instructions">Type in a new word for the data in this game, then hit done.</string>
     <string name="turn_counter">Turn counter</string>
     <string name="done">Done</string>

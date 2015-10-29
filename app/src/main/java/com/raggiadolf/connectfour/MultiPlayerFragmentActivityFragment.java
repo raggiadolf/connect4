@@ -39,12 +39,21 @@ public class MultiPlayerFragmentActivityFragment extends Fragment {
         super.onCreate(savedInstanceState);
     }
 
+    /**
+     * Attach the fragment to a context, not used here, we use the deprecated version
+     * that attaches the fragment to an activity
+     * @param ctx
+     */
     @Override
     public void onAttach(Context ctx) {
         super.onAttach(ctx);
         listener = (OnMoveListener) ctx;
     }
 
+    /**
+     * Attaches the fragment to an activity and assigns the activity as the listener.
+     * @param activity
+     */
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
@@ -61,19 +70,36 @@ public class MultiPlayerFragmentActivityFragment extends Fragment {
         super.onDestroy();
     }
 
+    /**
+     * Called when the user makes a move on the board
+     */
     public interface OnMoveListener {
-        public void onMove(int action);
+        void onMove(int action);
     }
     OnMoveListener listener;
 
+    /**
+     * Place a disc on the board
+     * @param lastMove
+     * @param lastRow
+     * @param lastPlayerToken
+     */
     public void updateDisplay(int lastMove, int lastRow, char lastPlayerToken) {
         m_boardView.placeDisc(lastMove, lastRow, lastPlayerToken);
     }
 
+    /**
+     * Can the user make a move on the board or not?
+     * @param move
+     */
     public void setCanMove(boolean move) {
         m_boardView.setCanMove(move);
     }
 
+    /**
+     * Set up the board from a string representation of a game state.
+     * @param newBoard
+     */
     public void setupBoard(String newBoard) {
         m_boardView.setupBoard(newBoard);
     }

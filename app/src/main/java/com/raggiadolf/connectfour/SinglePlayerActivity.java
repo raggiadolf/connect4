@@ -4,8 +4,6 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -13,7 +11,6 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.raggiadolf.connectfour.gameplayingagent.*;
 
@@ -46,6 +43,10 @@ public class SinglePlayerActivity extends AppCompatActivity {
         mGameOverText = (TextView) findViewById(R.id.gameovertext);
         mAnimSlideIn = AnimationUtils.loadAnimation(this, R.anim.anim_slide_in_from_left);
 
+        // Set the handler for the board, we check if the move that was made is legal,
+        // If it is, we perform the move and drop the disc onto the board, checking
+        // if the resulting state is a goalstate, then we let the ai make a move
+        // through an asynctask
         m_boardView.setMoveEventHandler(new OnMoveEventHandler() {
             @Override
             public void onMove(int action) {
@@ -95,10 +96,9 @@ public class SinglePlayerActivity extends AppCompatActivity {
     }
 
     public void updateDisplay() {
-        //m_boardView.setBoard(m_gameState.toString());
         m_boardView.placeDisc(m_gameState.getLastMove(), m_gameState.getLastRow(), m_gameState.getLastPlayerToken());
+        // TODO: Check for draw?
         if(m_gameState.GoalTest()) {
-            // Player won!
             mGameOver = true;
             if(mPlayersTurn) {
                 mGameOverText.setText("You won!");
@@ -130,10 +130,16 @@ public class SinglePlayerActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    /**
+     * An AsyncTask that performs the AlphaBetaSearch for the ai's.
+     * After it is finished it updates the board.
+     * We could use the onProgressUpdate handler to update the board while the agent is searching
+     * but it isn't really needed when it takes at most 1.5 seconds.
+     */
     private class AlphaBetaSearchTask extends AsyncTask<State, Integer, Integer> {
         @Override
         protected Integer doInBackground(State... params) {
-            try {
+            try { // A dirty fix to make all the ai's take a reasonable time in deciding their next move
                 Thread.sleep(500);
             } catch(InterruptedException ex) {
                 // Do nothing..

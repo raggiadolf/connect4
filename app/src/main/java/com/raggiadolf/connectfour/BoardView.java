@@ -60,6 +60,10 @@ public class BoardView extends View {
         }
     }
 
+    /**
+     * Sets up the board array from a string representation of a game state.
+     * @param string the string representing the state
+     */
     public void setupBoard(String string) {
         for(int row = 0, index = 0; row < 6; row++) {
             for(int col = 0; col < 7; col++, index++) {
@@ -70,15 +74,17 @@ public class BoardView extends View {
         invalidate();
     }
 
-    public void resetBoard() {
-        for(int row = 0, index = 0; row < 6; row++) {
-            for(int col = 0; col < 7; col++, index++) {
-                m_board[row][col] = 0;
-            }
-        }
-    }
-
     ValueAnimator animator = new ValueAnimator();
+
+    /**
+     * Animates the dropped disc from the top of the board down to its final location.
+     * When the animation ends it sets the discs position on the board so that it gets
+     * drawn there as a normal disc after the animation ends
+     * @param col The column to drop the disc into
+     * @param row The row the disc ends up in
+     * @param token The character representing the color of the disc being dropped
+     * @param endcoord the coordinates representing the final location of the disc
+     */
     private void dropDisc(final int col, final int row, final char token, final double endcoord) {
         animator.removeAllUpdateListeners();
         animator.setDuration(300);
@@ -104,6 +110,13 @@ public class BoardView extends View {
         animator.start();
     }
 
+    /**
+     * Creates a new disc to drop onto the board, calculates its end position and then starts the
+     * animation for that disc.
+     * @param row the row the disc ends up in
+     * @param col the column to drop the disc into
+     * @param token the character representing the color of the disc being dropped
+     */
     public void placeDisc(int row, int col, char token) {
         m_fallingDisc = new RectF();
         m_fallingDisc.set(row * m_cellWidth, 0,

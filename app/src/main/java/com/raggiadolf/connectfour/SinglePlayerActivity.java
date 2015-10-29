@@ -97,7 +97,6 @@ public class SinglePlayerActivity extends AppCompatActivity {
 
     public void updateDisplay() {
         m_boardView.placeDisc(m_gameState.getLastMove(), m_gameState.getLastRow(), m_gameState.getLastPlayerToken());
-        // TODO: Check for draw?
         if(m_gameState.GoalTest()) {
             mGameOver = true;
             if(mPlayersTurn) {
@@ -107,6 +106,13 @@ public class SinglePlayerActivity extends AppCompatActivity {
                 mGameOverText.setText("You lost.");
                 mGameOverMessage.setBackgroundColor(getResources().getColor(R.color.player1));
             }
+            // Slide in gameover
+            mGameOverMessage.startAnimation(mAnimSlideIn);
+            mGameOverMessage.setVisibility(View.VISIBLE);
+        } else if(m_gameState.TerminalTest()) { // Draw
+            mGameOver = true;
+            mGameOverText.setText("Draw!");
+            mGameOverMessage.setBackgroundColor(getResources().getColor(R.color.boardbackground));
             // Slide in gameover
             mGameOverMessage.startAnimation(mAnimSlideIn);
             mGameOverMessage.setVisibility(View.VISIBLE);

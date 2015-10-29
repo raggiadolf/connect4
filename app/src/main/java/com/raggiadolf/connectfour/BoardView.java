@@ -10,7 +10,6 @@ import android.graphics.Paint;
 import android.graphics.RectF;
 import android.support.annotation.NonNull;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -18,7 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by ragnaradolf on 22/09/15.
+ * Represents the game, handles the animations for the boards and represents the states
+ * visually.
  */
 public class BoardView extends View {
 

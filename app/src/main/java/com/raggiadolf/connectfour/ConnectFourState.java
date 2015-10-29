@@ -9,7 +9,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 
 /**
- * Created by ragnaradolf on 18/10/15.
+ * The state we pass between our clients when they have made a move in a multiplayer game
  */
 public class ConnectFourState {
     public static final String TAG = "C4State";
@@ -53,6 +53,10 @@ public class ConnectFourState {
         this.lastPlayer = lastPlayer;
     }
 
+    /**
+     * Persists the game state into a byte array
+     * @return the gamestate in a byte array
+     */
     public byte[] persist() {
         JSONObject retVal = new JSONObject();
 
@@ -72,6 +76,12 @@ public class ConnectFourState {
         return st.getBytes(Charset.forName("UTF-8"));
     }
 
+    /**
+     * Unpersist the game state from a byte array into a readable object that our clients
+     * know how to work with
+     * @param byteArray The byte array to unpersist
+     * @return a ConnectFour state extracted from the byte array
+     */
     static public ConnectFourState unpersist(byte[] byteArray) {
         if (byteArray == null) {
             Log.d(TAG, "Empty array---possible bug.");

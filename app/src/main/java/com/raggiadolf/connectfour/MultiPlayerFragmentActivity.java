@@ -197,6 +197,28 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
                                 processResult(result);
                             }
                         });
+            } else if(m_gameState.TerminalTest()) {
+                mGameOverText.setText("Draw!");
+                mGameOverMessage.setBackgroundColor(getResources().getColor(R.color.blankSquare));
+                mGameOverMessage.startAnimation(mAnimSlideIn);
+                mGameOverMessage.setVisibility(View.VISIBLE);
+                mGameOverMessage.bringToFront();
+                // Setup the finish match results
+                ParticipantResult myRes = new ParticipantResult(m_match.getParticipantId(Games.Players.getCurrentPlayerId(m_googleApiClient)), ParticipantResult.MATCH_RESULT_TIE, ParticipantResult.PLACING_UNINITIALIZED);
+                ParticipantResult oppoRes = new ParticipantResult(getNextParticipantId(), ParticipantResult.MATCH_RESULT_TIE, ParticipantResult.PLACING_UNINITIALIZED);
+                List<ParticipantResult> results = new ArrayList<>();
+                results.add(myRes);
+                results.add(oppoRes);
+
+                // Call finish match to notify the participants of the results
+                Games.TurnBasedMultiplayer.finishMatch(m_googleApiClient, m_match.getMatchId(),
+                        mTurnData.persist(), results)
+                        .setResultCallback(new ResultCallback<TurnBasedMultiplayer.UpdateMatchResult>() {
+                            @Override
+                            public void onResult(TurnBasedMultiplayer.UpdateMatchResult result) {
+                                processResult(result);
+                            }
+                        });
             } else { // Take the turn the player just made
                 Games.TurnBasedMultiplayer.takeTurn(m_googleApiClient, m_match.getMatchId(),
                         mTurnData.persist(), nextParticipantId).setResultCallback(
@@ -771,7 +793,30 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
                 if(turnStatus == TurnBasedMatch.MATCH_TURN_STATUS_COMPLETE) { // We've already finished this match
                     return;
                 }
-                // TODO: Check for a draw
+
+                String playerId = Games.Players.getCurrentPlayerId(m_googleApiClient);
+                Participant player = m_match.getParticipant(m_match.getParticipantId(playerId));
+                ParticipantResult result = player.getResult();
+
+                if(result != null && result.getResult() == ParticipantResult.MATCH_RESULT_TIE) { // Draw
+                    mGameOverText.setText("Draw!");
+                    mGameOverMessage.setBackgroundColor(getResources().getColor(R.color.blankSquare));
+                    mGameOverMessage.startAnimation(mAnimSlideIn);
+                    mGameOverMessage.setVisibility(View.VISIBLE);
+                    mGameOverMessage.bringToFront();
+
+                    // Call finishMatch to acknowledge that we have registered our result
+                    // and to complete the match.
+                    Games.TurnBasedMultiplayer.finishMatch(m_googleApiClient, m_match.getMatchId())
+                            .setResultCallback(new ResultCallback<TurnBasedMultiplayer.UpdateMatchResult>() {
+                                @Override
+                                public void onResult(TurnBasedMultiplayer.UpdateMatchResult result) {
+                                    processResult(result);
+                                }
+                            });
+                    break;
+                }
+
                 mGameOverText.setText("You lost.");
                 mGameOverMessage.setBackgroundColor((m_gameState.getLastPlayerToken() == 'W') ? getResources().getColor(R.color.player1) : getResources().getColor(R.color.player2));
                 mGameOverMessage.startAnimation(mAnimSlideIn);

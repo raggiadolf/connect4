@@ -24,9 +24,12 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.games.Games;
 import com.google.android.gms.games.GamesStatusCodes;
+import com.google.android.gms.games.leaderboard.LeaderboardVariant;
+import com.google.android.gms.games.leaderboard.Leaderboards;
 import com.google.android.gms.games.multiplayer.Invitation;
 import com.google.android.gms.games.multiplayer.Multiplayer;
 import com.google.android.gms.games.multiplayer.OnInvitationReceivedListener;
@@ -57,10 +60,10 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
 
     // For our intents
     private static final int RC_SIGN_IN = 9001;
-    private static final int RC_SELECT_PLAYERS  = 10000;
-    private static final int RC_LOOK_AT_MATCHES = 10001;
-    private static final int RC_REQUEST_ACHIEVEMENTS = 10002;
-    private static final int RC_LEADERBOARD = 10003;
+    final static int RC_SELECT_PLAYERS  = 10000;
+    final static int RC_LOOK_AT_MATCHES = 10001;
+    final static int RC_REQUEST_ACHIEVEMENTS = 10002;
+    final static int RC_LEADERBOARD = 10003;
 
     // Client used to interact with Google APIs
     private GoogleApiClient m_googleApiClient;
@@ -169,6 +172,14 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
                 Games.Achievements.increment(m_googleApiClient, getResources().getString(R.string.UP_AND_COMER), 1);
                 Games.Achievements.increment(m_googleApiClient, getResources().getString(R.string.BEASTMODE), 1);
                 Games.Leaderboards.submitScore(m_googleApiClient, getResources().getString(R.string.LEADERBOARD), 1);
+
+                PendingResult<Leaderboards.LoadPlayerScoreResult> result = Games.Leaderboards.loadCurrentPlayerLeaderboardScore(m_googleApiClient, getResources().getString(R.string.LEADERBOARD), LeaderboardVariant.TIME_SPAN_ALL_TIME, LeaderboardVariant.COLLECTION_PUBLIC);
+                result.setResultCallback(new ResultCallback<Leaderboards.LoadPlayerScoreResult>() {
+                    @Override
+                    public void onResult(Leaderboards.LoadPlayerScoreResult loadPlayerScoreResult) {
+                        Games.Leaderboards.submitScore(m_googleApiClient, getResources().getString(R.string.LEADERBOARD), loadPlayerScoreResult.getScore().getRawScore() + 1);
+                    }
+                });
 
                 // Setup the finish match results
                 ParticipantResult myRes = new ParticipantResult(m_match.getParticipantId(Games.Players.getCurrentPlayerId(m_googleApiClient)), ParticipantResult.MATCH_RESULT_WIN, ParticipantResult.PLACING_UNINITIALIZED);
@@ -604,6 +615,8 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
             m_match = turnBasedMatch;
 
             updateMatch(m_match);
+        } else {
+            Log.d(TAG, "Not ingame");
         }
     }
 
@@ -847,6 +860,7 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
         dismissSpinner();
 
         if (!checkStatusCode(match, result.getStatus().getStatusCode())) {
+            Toast.makeText(this, "" + result.getStatus().getStatusCode(), Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -879,6 +893,29 @@ public class MultiPlayerFragmentActivity extends FragmentActivity
         }
 
         setViewVisibility();
+    }
+
+    private void processResult(TurnBasedMultiplayer.CancelMatchResult result) {
+        dismissSpinner();
+
+        if (!checkStatusCode(null, result.getStatus().getStatusCode())) {
+            return;
+        }
+
+        isDoingTurn = false;
+
+        showWarning("Match", "This match is canceled.  All other players will have their game ended.");
+    }
+
+    private void processResult(TurnBasedMultiplayer.LeaveMatchResult result) {
+        TurnBasedMatch match = result.getMatch();
+        dismissSpinner();
+        if (!checkStatusCode(match, result.getStatus().getStatusCode())) {
+            return;
+            }
+        isDoingTurn = (match.getTurnStatus() == TurnBasedMatch.MATCH_TURN_STATUS_MY_TURN);
+        showWarning("Left", "You've left this match.");
+        isIngame = false;
     }
 
     public void showErrorMessage(TurnBasedMatch match, int statusCode,
